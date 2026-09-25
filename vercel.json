@@ -1,0 +1,11 @@
+{
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/((?!api/.*).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/proxy.ts": {
+      "regions": ["fra1"]
+    }
+  }
+}

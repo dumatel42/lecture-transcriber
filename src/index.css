@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+}
+
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* Publication & Print Styles for instant PDF export */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  .prose-print {
+    font-family: 'Georgia', serif !important;
+    color: #1e293b !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .prose-print blockquote {
+    border-left: 3.5pt solid #d97706 !important;
+    background: #faf7f2 !important;
+    padding: 8pt 14pt !important;
+    margin: 12pt 0 !important;
+    page-break-inside: avoid;
+  }
+
+  .prose-print h1,
+  .prose-print h2,
+  .prose-print h3 {
+    page-break-after: avoid;
+    color: #7c2d12 !important;
+  }
+}
