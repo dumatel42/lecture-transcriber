@@ -1,5 +1,6 @@
 import React from 'react';
 import { Mic, Key, Globe } from 'lucide-react';
+import { GithubIcon } from './icons/GithubIcon';
 import { Language, translations } from '../i18n/translations';
 
 interface NavbarProps {
@@ -39,8 +40,20 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Right Actions: Language Switcher & Key Modal */}
+        {/* Right Actions: GitHub, Language Switcher & Key Modal */}
         <div className="flex items-center gap-2.5">
+          {/* GitHub Repository Link */}
+          <a
+            href="https://github.com/dumatel42/lecture-transcriber"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border border-slate-700/80 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white transition-all cursor-pointer shadow-sm"
+            title={lang === 'en' ? 'Open Source on GitHub (Code & Guide)' : 'Открытый исходный код и руководство на GitHub'}
+          >
+            <GithubIcon className="w-3.5 h-3.5 text-slate-300" />
+            <span className="hidden sm:inline font-mono">GitHub</span>
+          </a>
+
           {/* Top-Right Language Switcher */}
           <button
             onClick={onToggleLang}

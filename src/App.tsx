@@ -29,6 +29,7 @@ import {
   BookOpen,
   CheckCircle2
 } from 'lucide-react';
+import { GithubIcon } from './components/icons/GithubIcon';
 
 export const App: React.FC = () => {
   // Language state (default: 'en')
@@ -614,8 +615,21 @@ export const App: React.FC = () => {
       </main>
 
       {/* Footer (Hidden on print) */}
-      <footer className="no-print border-t border-slate-800/80 py-6 text-center text-xs text-slate-500">
+      <footer className="no-print border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 space-y-2">
         <p>{t.footer.text}</p>
+        <div className="flex items-center justify-center gap-3 text-slate-400">
+          <a
+            href="https://github.com/dumatel42/lecture-transcriber"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-amber-400/90 hover:text-amber-300 hover:underline transition-colors"
+          >
+            <GithubIcon className="w-3.5 h-3.5" />
+            <span>GitHub (Open Source & Guide)</span>
+          </a>
+          <span>•</span>
+          <span className="text-slate-500">MIT License</span>
+        </div>
       </footer>
 
       {/* API Key Modal */}
