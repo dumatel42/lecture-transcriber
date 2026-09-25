@@ -89,26 +89,31 @@ VERBATIM TRANSCRIPT (WITH SANSCRIBED TERMS VERIFIED & ANNOTATED)
 ================================================================================
 
 CRITICAL TRANSCRIBING & EDITORIAL RULES:
-1. AUTO-PUNCTUATION & SYNTACTIC SEGMENTATION:
+1. AUTO-PUNCTUATION, SYNTACTIC SEGMENTATION & CONTRACTION EXPANSION:
    - The speaker delivers long, rapid, continuous monologues without vocal pauses. You MUST reconstruct grammatical sentence boundaries with high precision.
    - Punctuate continuously with periods, commas, semicolons, and em-dashes. NEVER allow runaway sentences exceeding 25-30 words without logical clause breaks.
    - Divide speech into natural, readable paragraphs of 3-5 sentences each.
    - Enclose direct quotations, rhetorical questions, and spoken dialogue in quotation marks.
+   - EXPAND CONTRACTIONS (BOOK-EDITORIAL STANDARD):
+     * Expand standard grammatical spoken contractions into their full formal forms: "I'm" -> "I am", "it's" -> "it is", "you're" -> "you are", "we're" -> "we are", "they're" -> "they are", "you've" -> "you have", "we've" -> "we have", "I've" -> "I have", "can't" -> "cannot", "don't" -> "do not", "doesn't" -> "does not", "didn't" -> "did not", "won't" -> "will not".
+     * EXCEPTIONS: Retain colloquial contractions ONLY inside direct quoted speech within quotation marks (e.g. "He said, 'Don't go there!'") or in idiomatic rhetorical banter.
 
 2. SANSKRIT & VAISHNAVA FORMATTING (STRICT EDITORIAL MANDATE):
-   - ITALICS ONLY (NO BOLD): ALL Sanskrit and Bengali terms in the text MUST be formatted in *italics* with exact IAST diacritics (e.g., *jīva*, *guṇas*, *bhakti*, *śāstra*, *ācārya*, *sat-cit-ānanda*).
-   - ABSOLUTE PROHIBITION OF BOLD: NEVER format Sanskrit terms in bold (**jīva**, **bhakti** are strictly forbidden; always use *jīva*, *bhakti*).
+   - RUNNING TEXT (ITALICS ONLY, NO BOLD): ALL Sanskrit and Bengali terms in the running body text MUST be formatted in *italics* with exact IAST diacritics (e.g., *jīva*, *guṇas*, *bhakti*, *śāstra*, *ācārya*, *sat-cit-ānanda*).
+   - ABSOLUTE PROHIBITION OF BOLD: NEVER format Sanskrit terms in bold (**jīva**, **bhakti** are strictly forbidden; always use *jīva*, *bhakti* in body text).
    - LOWERCASE COMMON NOUNS: Common Sanskrit terms MUST be in lowercase (*māyā*, *guṇa*, *jīva-tattva*, *prāṇa*, *abhiniveśa*), capitalized ONLY at sentence start or for proper nouns/names (*Kṛṣṇa*, *Rādhā*, *Caitanya*, *Śrīla Prabhupāda*).
    - EXACT IAST DIACRITICS: Always use authentic diacritics (ā, ī, ū, ṛ, ṝ, ḷ, ṅ, ñ, ṭ, ḍ, ṇ, ś, ṣ, ḥ, ṁ).
    - 1:1 SCRIPTURAL VERBATIM (ABSOLUTE ANTI-HALLUCINATION RULE):
      * If the lecturer recites a partial verse, line, or single phrase from scripture, transcribe ONLY the exact words spoken by the lecturer.
      * NEVER expand a partial quote into a full verse. NEVER insert unrecited lines from memory or Vedabase.
      * Calibrate the spelling and diacritics of spoken Sanskrit words with the canonical Vedabase IAST standard, but strictly keep the word sequence and length 1:1 with the audio.
-   - ANTI-SPAM CITATION RULE:
-     * When the speaker first introduces or quotes a verse, cite its canonical scriptural source once, e.g.:
-       > *verse in italics with IAST diacritics*
+   - SCRIPTURAL BLOCKQUOTE FORMATTING (UPRIGHT VERSE + BOLD CITATION):
+     * When a verse is cited, format it as a markdown blockquote. The Sanskrit verse text itself MUST be in regular upright Roman font with authentic IAST diacritics (DO NOT italicize the blockquote verse), and the source reference line MUST be in bold:
+       > verse in regular upright text with IAST diacritics (no asterisks)
        > — **Scriptural Reference (e.g. Bhagavad-gītā 2.13, Śrīmad-Bhāgavatam 1.2.11, Caitanya-caritāmṛta Madhya 20.108)**
-     * When the speaker proceeds to analyze, repeat, or explain individual words (*patraṁ*, *puṣpaṁ*, *toyam*), DO NOT insert repeated scriptural citation tags after each individual word. Maintain clean, uninterrupted reading flow.
+   - ANTI-SPAM CITATION RULE:
+     * When the speaker first introduces or quotes a verse, emit the blockquote and scriptural reference ONCE.
+     * When the speaker proceeds to analyze, repeat, or explain individual words (*patraṁ*, *puṣpaṁ*, *toyam*), DO NOT insert repeated scriptural citation tags after each individual word. In body text, format individual words in *italics*. Maintain clean, uninterrupted reading flow.
 
 3. SACRED INVOCATIONS, MANTRAS & ŚLOKAS (ABSOLUTE ANTI-PLACEHOLDER RULE):
    - ABSOLUTE PROHIBITION: NEVER replace prayers, chanting, or invocations with bracketed placeholders (STRICTLY FORBIDDEN: "[Chanting / Mangalācaraṇa: ...]" or "[kirtan]").
@@ -151,15 +156,16 @@ In this mono-track audio, two speakers are speaking in alternating turns:
 
 CRITICAL INSTRUCTIONS:
 1. Automatically detect the interpreter's spoken language.
-2. Reconstruct sentence boundaries and punctuation cleanly for continuous monologue speech.
+2. Reconstruct sentence boundaries and punctuation cleanly for continuous monologue speech. Expand standard contractions (I'm -> I am, you're -> you are) except in quotes.
 3. Transcribe the dialogue chronologically, clearly attributing each speaker turn:
    - Label the English lecturer as: [Lecturer (EN)]
    - Label the interpreter with their detected language code, e.g.: [Interpreter (IT)], [Interpreter (ES)], [Interpreter (RU)], etc.
    ${includeTimestamps ? '(Include timestamp [HH:MM:SS] only at the start of substantial turns, not every sentence.)' : '(Do NOT include timestamps, only speaker labels.)'}
-4. Preserve Sanskrit/Vaishnava terminology in *italics* with exact IAST diacritics in both speaker segments.
+4. Preserve Sanskrit/Vaishnava terminology in body text in *italics* with exact IAST diacritics in both speaker segments.
 5. Transcribe both speakers verbatim in their respective spoken languages without omissions.
 6. 1:1 SCRIPTURAL VERBATIM & ANTI-SPAM CITATIONS:
    - When verses are recited, transcribe ONLY the words actually spoken. Do not complete partial verses.
+   - Scriptural blockquotes: verse in regular upright text with IAST (no italics), citation line in **bold**.
    - Cite source once upon introduction; do not repeat citation during word-by-word breakdowns.
 ${phoneticSoundAlikeMap}`;
 
@@ -180,8 +186,9 @@ Please structure your response into two distinct, high-value sections:
 # SECTION 2: VERBATIM ENGLISH TRANSCRIPTION (GOLDEN STANDARD)
 - Include publication metadata header block at top.
 - Transcribe ONLY the original English speech of the lecturer verbatim.
-- AUTO-PUNCTUATION: Punctuate continuous speech with natural sentence breaks (no sentences over 25 words).
-- SANSKRIT STANDARD: *Italics* only (no bold), lowercase common nouns, exact IAST diacritics, scriptural citations for all ślokas.
+- AUTO-PUNCTUATION & CONTRACTION EXPANSION: Punctuate continuous speech with natural sentence breaks (no sentences over 25 words). Expand standard contractions (I'm -> I am, you're -> you are, it's -> it is) except in quoted dialogue.
+- SANSKRIT STANDARD: Body text terms in *italics* only (no bold), lowercase common nouns, exact IAST diacritics.
+- SCRIPTURAL BLOCKQUOTES: Upright verse text with IAST (no italics) + bold source citation.
 - 1:1 SCRIPTURAL VERBATIM: Transcribe ONLY the words spoken by the lecturer. Do not complete verses or hallucinate unsaid lines.
 - ANTI-SPAM CITATION RULE: Cite scripture once on introduction; do not repeat citations when dissecting words.
 - Transcribe all Mangalācaraṇa prayers and Guru Praṇāma line-by-line without bracket placeholders.
