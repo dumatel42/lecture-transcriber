@@ -38,6 +38,9 @@ export interface Translations {
     systemPromptTitle: string;
     resetDefault: string;
     activeEngine: string;
+    customScriptureLabel: string;
+    customScripturePlaceholder: string;
+    customScriptureHint: string;
     presets: {
       vaishnava_english: {
         name: string;
@@ -197,6 +200,9 @@ export const translations: Record<Language, Translations> = {
       systemPromptTitle: 'System Instructions for Gemini Engine (Customizable):',
       resetDefault: 'Reset to default',
       activeEngine: 'Active Engine',
+      customScriptureLabel: 'Focus Scripture / Topic (Optional)',
+      customScripturePlaceholder: 'e.g., Jaiva-dharma, Bhakti-rasāmṛta-sindhu, Bhagavad-gītā...',
+      customScriptureHint: 'Prioritizes rare terms, specific verses and philosophical context from this work.',
       presets: {
         vaishnava_english: {
           name: 'Vaishnava / Vedic Lecture',
@@ -354,6 +360,9 @@ export const translations: Record<Language, Translations> = {
       systemPromptTitle: 'Инструкции для нейросети (Gemini):',
       resetDefault: 'Сбросить по умолчанию',
       activeEngine: 'Активный режим',
+      customScriptureLabel: 'Специфика / Писание лекции (опционально)',
+      customScripturePlaceholder: 'напр., Джайва-дхарма, Бхакти-расамрита-синдху, Бхагавад-гита...',
+      customScriptureHint: 'Помогает ИИ распознавать редкие термины, цитаты и контекст этого произведения.',
       presets: {
         vaishnava_english: {
           name: 'Вайшнавская / Ведическая лекция',

@@ -65,6 +65,7 @@ export const App: React.FC = () => {
   const [includeTimestamps, setIncludeTimestamps] = useState(false);
   
   const [currentMode, setCurrentMode] = useState<TranscriptionMode>('vaishnava_english');
+  const [customScripture, setCustomScripture] = useState<string>('');
   const [promptText, setPromptText] = useState<string>(() => buildPresetPrompt('vaishnava_english', false));
 
   // Cached upload info
@@ -492,6 +493,8 @@ export const App: React.FC = () => {
                   onPromptChange={setPromptText}
                   includeTimestamps={includeTimestamps}
                   onToggleTimestamps={setIncludeTimestamps}
+                  customScripture={customScripture}
+                  onCustomScriptureChange={setCustomScripture}
                   disabled={isBusy}
                   lang={lang}
                 />

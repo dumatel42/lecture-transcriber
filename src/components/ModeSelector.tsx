@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TranscriptionMode } from '../types';
 import { TRANSCRIPTION_PRESETS, buildPresetPrompt } from '../constants/presets';
-import { Sliders, ChevronDown, ChevronUp, Sparkles, Users, BookOpen, GraduationCap, Edit3, Clock } from 'lucide-react';
+import { Sliders, ChevronDown, ChevronUp, Sparkles, Users, BookOpen, GraduationCap, Edit3, Clock, BookMarked } from 'lucide-react';
 import { Language, translations } from '../i18n/translations';
 
 interface ModeSelectorProps {
@@ -11,6 +11,8 @@ interface ModeSelectorProps {
   onPromptChange: (newPrompt: string) => void;
   includeTimestamps: boolean;
   onToggleTimestamps: (enabled: boolean) => void;
+  customScripture: string;
+  onCustomScriptureChange: (value: string) => void;
   disabled: boolean;
   lang: Language;
 }
@@ -22,6 +24,8 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   onPromptChange,
   includeTimestamps,
   onToggleTimestamps,
+  customScripture,
+  onCustomScriptureChange,
   disabled,
   lang
 }) => {
@@ -46,13 +50,13 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
   const handleSelectMode = (mode: TranscriptionMode) => {
     if (disabled) return;
     onModeChange(mode);
-    onPromptChange(buildPresetPrompt(mode, includeTimestamps));
+    onPromptChange(buildPresetPrompt(mode, includeTimestamps, customScripture));
   };
 
   const handleTimestampToggle = (newVal: boolean) => {
     if (disabled) return;
     onToggleTimestamps(newVal);
-    onPromptChange(buildPresetPrompt(currentMode, newVal));
+    onPromptChange(buildPresetPrompt(currentMode, newVal, customScripture));
   };
 
   const presetKeys: TranscriptionMode[] = [
@@ -153,6 +157,48 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
         })}
       </div>
 
+      {/* Focus Scripture / Topic Input (Optional) */}
+      <div className="pt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-slate-950/70 rounded-xl border border-slate-800/80 hover:border-slate-700/80 transition-colors">
+          <div className="flex items-center gap-2.5 min-w-[210px]">
+            <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <BookMarked className="w-4 h-4 text-amber-400 shrink-0" />
+            </div>
+            <div>
+              <span className="text-xs font-semibold text-slate-200 block">{t.customScriptureLabel}</span>
+              <span className="text-[11px] text-slate-400 block">{t.customScriptureHint}</span>
+            </div>
+          </div>
+          <div className="flex-1 w-full sm:max-w-md relative">
+            <input
+              type="text"
+              value={customScripture}
+              onChange={(e) => {
+                const val = e.target.value;
+                onCustomScriptureChange(val);
+                onPromptChange(buildPresetPrompt(currentMode, includeTimestamps, val));
+              }}
+              disabled={disabled}
+              placeholder={t.customScripturePlaceholder}
+              className="w-full bg-slate-900/90 border border-slate-700/70 focus:border-amber-500/80 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none transition-colors pr-7"
+            />
+            {customScripture && !disabled && (
+              <button
+                type="button"
+                onClick={() => {
+                  onCustomScriptureChange('');
+                  onPromptChange(buildPresetPrompt(currentMode, includeTimestamps, ''));
+                }}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs px-1 cursor-pointer"
+                title="Clear"
+              >
+                ✕
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* Expandable Prompt Editor */}
       {showPromptEditor && (
         <div className="pt-3 border-t border-slate-800/80 space-y-2">
@@ -161,7 +207,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
               {t.systemPromptTitle}
             </label>
             <button
-              onClick={() => onPromptChange(buildPresetPrompt(currentMode, includeTimestamps))}
+              onClick={() => onPromptChange(buildPresetPrompt(currentMode, includeTimestamps, customScripture))}
               className="text-[11px] text-amber-400 hover:underline cursor-pointer"
             >
               {t.resetDefault}

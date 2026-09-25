@@ -11,6 +11,7 @@ export interface ModeConfig {
   badge: string;
   description: string;
   prompt: string;
+  customScripture?: string;
 }
 
 export type ProcessingStage = 
