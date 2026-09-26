@@ -13,18 +13,26 @@ export interface UploadedFileInfo {
 
 // Full production models (fastest, ultra-reliable models with verified API availability)
 export const PRODUCTION_MODELS = [
-  'gemini-3-flash-preview',
+  'gemini-3.5-flash-lite',
+  'gemini-flash-lite-latest',
+  'gemini-3.8-flash',
   'gemini-3.6-flash',
-  'gemini-flash-latest',
-  'gemini-3.1-flash-lite'
+  'gemini-3-flash-preview'
 ];
 
-// Multi-Key Pool for automatic failover (3 keys * 1500 req = 4500 daily requests)
-export const DEFAULT_KEY_POOL = [
-  'AQ.Ab8RN6KFaNx8nF1bPtMj_lVZzDj5xxirdbPgiksDwzPL-yOWgA',
-  'AQ.Ab8RN6KDwcWJo-rH_CXkV83rqmCisRvmD82-Q_HlCfBA_8aWxw',
-  'AQ.Ab8RN6Jb7QozS1XM8FfAFK_v-bGUu3nrIQMKFWdZqHRPvt6eHw'
-];
+// Multi-Key Pool for automatic failover (securely loaded from environment variables)
+export const DEFAULT_KEY_POOL: string[] = (() => {
+  const poolStr = import.meta.env.VITE_GEMINI_KEY_POOL;
+  if (poolStr && typeof poolStr === 'string') {
+    const keys = poolStr.split(',').map((k: string) => k.trim()).filter(Boolean);
+    if (keys.length > 0) return keys;
+  }
+  const singleKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (singleKey && typeof singleKey === 'string' && singleKey.trim()) {
+    return [singleKey.trim()];
+  }
+  return [];
+})();
 
 let currentKeyIndex = 0;
 

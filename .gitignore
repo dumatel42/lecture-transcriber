@@ -16,3 +16,4 @@ dist-ssr
 *.mp3
 *.m4a
 *.wav
+*.cjs
