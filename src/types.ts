@@ -1,5 +1,6 @@
 export type TranscriptionMode = 
   | 'vaishnava_english'      // Vaishnava/Vedic context: English lecturer only, eliminates mishearings, filters interpreter
+  | 'vaishnava_russian'      // Vaishnava/Vedic context: Russian speech (100% verbatim in Russian, mantras, IAST terms)
   | 'bilingual_split'        // Both speakers: [Lecturer (EN)] + [Interpreter (Detected Language)]
   | 'vaishnava_with_summary' // English verbatim + Philosophical study notes & quoted shlokas
   | 'general_english'        // General non-philosophical lecture (English only)

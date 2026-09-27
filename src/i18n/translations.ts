@@ -47,6 +47,11 @@ export interface Translations {
         badge: string;
         description: string;
       };
+      vaishnava_russian: {
+        name: string;
+        badge: string;
+        description: string;
+      };
       bilingual_split: {
         name: string;
         badge: string;
@@ -212,9 +217,14 @@ export const translations: Record<Language, Translations> = {
       customScriptureHint: 'Prioritizes rare terms, specific verses and philosophical context from this work.',
       presets: {
         vaishnava_english: {
-          name: 'Vaishnava / Vedic Lecture',
-          badge: 'Recommended',
+          name: 'Vaishnava / Vedic Lecture (English)',
+          badge: 'Golden Standard',
           description: 'Full Sanskrit mantras in IAST, authentic honorifics, live conversational speech and clean publication formatting.'
+        },
+        vaishnava_russian: {
+          name: 'Vaishnava Lecture (Russian)',
+          badge: 'Russian Speech',
+          description: '100% verbatim Russian lecture without condensation: complete Mangalācaraṇa, Sanskrit in italics, and blockquoted verses.'
         },
         bilingual_split: {
           name: 'Both Speakers (Lecturer + Interpreter)',
@@ -379,9 +389,14 @@ export const translations: Record<Language, Translations> = {
       customScriptureHint: 'Помогает ИИ распознавать редкие термины, цитаты и контекст этого произведения.',
       presets: {
         vaishnava_english: {
-          name: 'Вайшнавская / Ведическая лекция',
-          badge: 'Рекомендуется',
-          description: 'Полные санскритские мантры в IAST, точные титулы, живая речь с юмором и чистое книжное форматирование.'
+          name: 'Вайшнавская лекция (Английская)',
+          badge: 'English Golden',
+          description: 'Полные санскритские мантры в IAST, точные титулы, живая речь с юмором и удаление переводчика.'
+        },
+        vaishnava_russian: {
+          name: 'Вайшнавская лекция (Русская речь)',
+          badge: '100% Дословно',
+          description: '100% дословная русская лекция: без сокращений, полная Мангалачарана, санскрит курсивом, шлоки в блоках цитат и живой юмор.'
         },
         bilingual_split: {
           name: 'Оба спикера (Лектор + Переводчик)',

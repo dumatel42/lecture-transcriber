@@ -36,6 +36,8 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
     switch (mode) {
       case 'vaishnava_english':
         return <Sparkles className="w-5 h-5 text-amber-400" />;
+      case 'vaishnava_russian':
+        return <BookMarked className="w-5 h-5 text-emerald-400" />;
       case 'bilingual_split':
         return <Users className="w-5 h-5 text-purple-400" />;
       case 'vaishnava_with_summary':
@@ -61,6 +63,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
 
   const presetKeys: TranscriptionMode[] = [
     'vaishnava_english',
+    'vaishnava_russian',
     'bilingual_split',
     'vaishnava_with_summary',
     'general_english'
@@ -111,7 +114,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
       </div>
 
       {/* Preset cards grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
         {presetKeys.map((modeKey) => {
           const localizedPreset = t.presets[modeKey] || TRANSCRIPTION_PRESETS[modeKey];
           const isSelected = currentMode === modeKey;

@@ -408,26 +408,44 @@ async function readSSEStream(
   let accumulatedText = '';
   let buffer = '';
 
-  const isDegenerationLoop = (accumulated: string, incoming: string): boolean => {
-    const combined = accumulated + incoming;
+  const isSacredChant = (text: string): boolean => {
+    const t = text.toLowerCase();
+    const keywords = [
+      'hare', 'krsna', 'krishna', 'rama', 'radhe', 'radha', 'haribol',
+      'govinda', 'caitanya', 'gaura', 'namo', 'svaha', 'om ', 'jaya',
+      'ki jaya', 'ki jai', 'prabhupada', 'gurudeva', 'mangalacarana'
+    ];
+    return keywords.some((k) => t.includes(k));
+  };
 
-    // 1. Sentence-level repetition
+  const isDegenerationLoop = (accumulated: string, incoming: string): boolean => {
+    if (!incoming || incoming.trim().length < 15) return false;
+    if (isSacredChant(incoming)) return false;
+
+    // Direct repetition: check if this incoming text has already repeated 3+ times at the tail
+    const trimmed = incoming.trim();
+    if (trimmed.length >= 25) {
+      const triple = trimmed + ' ' + trimmed + ' ' + trimmed;
+      if (accumulated.includes(triple)) {
+        return true;
+      }
+    }
+
+    // Sentence-level repetition: only trigger if 4 consecutive long sentences are 100% identical and not sacred chants
+    const combined = accumulated + incoming;
     const sentences = combined
       .split(/(?<=[.?!])\s+|\n+/)
       .map((s) => s.trim().replace(/^\[\d\d:\d\d:\d\d\]\s*/, ''))
-      .filter((s) => s.length >= 20);
+      .filter((s) => s.length >= 25 && !isSacredChant(s));
 
-    if (sentences.length >= 3) {
-      const last = sentences[sentences.length - 1];
-      const prev1 = sentences[sentences.length - 2];
-      const prev2 = sentences[sentences.length - 3];
-      if (last === prev1 && last === prev2) return true;
-    }
-
-    // 2. Phrase-level repetition within the last 600 characters
-    const tail = combined.slice(-600);
-    if (/(.{12,200}?)\1{2,}/s.test(tail)) {
-      return true;
+    if (sentences.length >= 4) {
+      const s0 = sentences[sentences.length - 1];
+      const s1 = sentences[sentences.length - 2];
+      const s2 = sentences[sentences.length - 3];
+      const s3 = sentences[sentences.length - 4];
+      if (s0 === s1 && s0 === s2 && s0 === s3) {
+        return true;
+      }
     }
 
     return false;
@@ -454,16 +472,22 @@ async function readSSEStream(
         const parsed = JSON.parse(jsonStr);
         const candidates = parsed.candidates;
         if (candidates && candidates.length > 0) {
-          const parts = candidates[0].content?.parts;
+          const candidate = candidates[0];
+          if (candidate.finishReason && candidate.finishReason !== 'STOP') {
+            console.warn(`[Gemini Stream] finishReason: ${candidate.finishReason}`);
+            if (candidate.finishReason === 'MAX_TOKENS') {
+              console.warn('[Gemini Stream] Output token limit reached (MAX_TOKENS).');
+            }
+          }
+          const parts = candidate.content?.parts;
           if (parts && parts.length > 0) {
             for (const part of parts) {
               if (part.text && !part.thought) {
                 if (isDegenerationLoop(accumulatedText, part.text)) {
                   console.warn('Degeneration repetition loop detected and suppressed.');
                   consecutiveLoops++;
-                  if (consecutiveLoops >= 3) {
-                    console.warn('Loop threshold reached, cleanly aborting chunk stream.');
-                    try { await reader.cancel(); } catch {}
+                  if (consecutiveLoops >= 20) {
+                    console.warn('Persistent degeneration loop threshold reached, cleanly concluding stream.');
                     break;
                   }
                   continue;
@@ -479,7 +503,7 @@ async function readSSEStream(
         // Skip malformed SSE chunk
       }
     }
-    if (consecutiveLoops >= 3) {
+    if (consecutiveLoops >= 20) {
       break;
     }
   }
