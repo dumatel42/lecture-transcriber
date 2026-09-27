@@ -131,6 +131,13 @@ export interface Translations {
     cleanReadingSub: string;
     termsSub: string;
     completed100: string;
+    bilingualDocxBtn: string;
+    bilingualExportTitle: string;
+    bilingualParallel: string;
+    bilingualParallelSub: string;
+    bilingualBook: string;
+    bilingualBookSub: string;
+    bilingualMdBtn: string;
   };
   features: {
     clarityTitle: string;
@@ -292,7 +299,14 @@ export const translations: Record<Language, Translations> = {
       ruTranslationHeader: 'Russian Translation',
       cleanReadingSub: 'Clean Reading',
       termsSub: 'Vaishnava Terminology',
-      completed100: 'Transcription 100% Complete'
+      completed100: 'Transcription 100% Complete',
+      bilingualDocxBtn: 'Bilingual .DOCX',
+      bilingualExportTitle: 'Bilingual Documents (EN + RU)',
+      bilingualParallel: 'Parallel Table (2 Columns)',
+      bilingualParallelSub: 'Landscape format, EN left / RU right for comparison',
+      bilingualBook: 'Complete Book Edition (EN + RU)',
+      bilingualBookSub: 'Portrait A4: Part I English + Part II Russian',
+      bilingualMdBtn: 'Bilingual Markdown (.MD)'
     },
     features: {
       clarityTitle: 'Speaker Clarity',
@@ -452,7 +466,14 @@ export const translations: Record<Language, Translations> = {
       ruTranslationHeader: 'Русский перевод',
       cleanReadingSub: 'Чистый текст',
       termsSub: 'Вайшнавская терминология',
-      completed100: 'Распознавание завершено'
+      completed100: 'Распознавание завершено',
+      bilingualDocxBtn: 'Билингв .DOCX',
+      bilingualExportTitle: 'Двуязычные документы (EN + RU)',
+      bilingualParallel: 'Параллельная таблица (2 колонки)',
+      bilingualParallelSub: 'Альбомный лист, EN слева / RU справа для сверки',
+      bilingualBook: 'Книжное издание (EN + RU)',
+      bilingualBookSub: 'Книжный A4: Часть I оригинал + Часть II перевод',
+      bilingualMdBtn: 'Двуязычный Markdown (.MD)'
     },
     features: {
       clarityTitle: 'Чистая речь лектора',

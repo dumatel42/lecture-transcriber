@@ -23,7 +23,8 @@ import {
   TableCell,
   WidthType,
   PageOrientation,
-  AlignmentType
+  AlignmentType,
+  PageBreak
 } from 'docx';
 
 export interface DocxExportOptions {
@@ -31,6 +32,7 @@ export interface DocxExportOptions {
   activeTab?: 'english' | 'russian' | 'bilingual';
   englishTranscript?: string;
   russianTranslation?: string;
+  bilingualFormat?: 'parallel' | 'book';
 }
 
 /**
@@ -383,90 +385,272 @@ function markdownToDocxParagraphs(markdownText: string): Paragraph[] {
   return paragraphs;
 }
 
-/**
- * Builds and downloads a professional Word (.docx) document
- */
-export async function downloadDocxTranscript(options: DocxExportOptions): Promise<void> {
-  const { fileName, activeTab = 'english', englishTranscript = '', russianTranslation = '' } = options;
-  const baseName = fileName.replace(/\.[^/.]+$/, '');
+export interface ChapterBlock {
+  title: string;
+  timestamp: string;
+  paragraphs: string[];
+}
 
-  if (activeTab === 'bilingual' || (englishTranscript && russianTranslation && activeTab !== 'russian')) {
+/**
+ * Splits markdown into synchronized chapters based on timestamps [HH:MM:SS]
+ */
+export function splitIntoChapters(markdownText: string): ChapterBlock[] {
+  const lines = markdownText.split('\n');
+  const chapters: ChapterBlock[] = [];
+  let currentTitle = 'INTRODUCTION';
+  let currentTimestamp = '[00:00:00]';
+  let currentParaLines: string[] = [];
+  let currentParas: string[] = [];
+
+  const flushPara = () => {
+    if (currentParaLines.length > 0) {
+      const text = currentParaLines.join('\n').trim();
+      if (text) currentParas.push(text);
+      currentParaLines = [];
+    }
+  };
+
+  const flushChapter = () => {
+    flushPara();
+    if (currentParas.length > 0 || currentTitle) {
+      chapters.push({
+        title: currentTitle,
+        timestamp: currentTimestamp,
+        paragraphs: currentParas
+      });
+      currentParas = [];
+    }
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawLine = lines[i];
+    const trimmed = rawLine.trim();
+
+    // Check for chapter heading: ## [00:00:00] TITLE or [00:00:00] TITLE
+    const timestampHeadingMatch = trimmed.match(/^(?:##\s+)?(\[?\d{1,2}:\d{2}(?::\d{2})?\]?)\s*(.*)$/);
+    if (timestampHeadingMatch && (timestampHeadingMatch[1].startsWith('[') || timestampHeadingMatch[2].length > 0)) {
+      flushChapter();
+      let ts = timestampHeadingMatch[1];
+      if (!ts.startsWith('[')) ts = `[${ts}]`;
+      currentTimestamp = ts;
+      currentTitle = timestampHeadingMatch[2] || '';
+      if (!currentTitle && i + 1 < lines.length && lines[i + 1].trim() && !lines[i + 1].trim().startsWith('[')) {
+        i++;
+        currentTitle = lines[i].trim();
+      }
+      continue;
+    }
+
+    if (!trimmed) {
+      flushPara();
+      continue;
+    }
+
+    // Skip metadata headers from chapter body if at the top
+    if (
+      trimmed.startsWith('LECTURE TITLE:') || trimmed.startsWith('НАЗВАНИЕ ЛЕКЦИИ:') ||
+      trimmed.startsWith('SUBTITLE:') || trimmed.startsWith('ПОДЗАГОЛОВОК:') ||
+      trimmed.startsWith('SPEAKER:') || trimmed.startsWith('ДОКЛАДЧИК:') ||
+      trimmed.startsWith('DATE:') || trimmed.startsWith('ДАТА:') ||
+      trimmed.startsWith('VENUE:') || trimmed.startsWith('МЕСТО:') ||
+      trimmed.startsWith('SOURCE FILE:') || trimmed.startsWith('ИСТОЧНИК:') ||
+      trimmed.startsWith('ПОЛНЫЙ ПЕРЕВОД') || trimmed.startsWith('VERBATIM TRANSCRIPT') ||
+      /^={5,}|^-{3,}|^\*{3,}$/.test(trimmed)
+    ) {
+      continue;
+    }
+
+    currentParaLines.push(rawLine);
+  }
+
+  flushChapter();
+  return chapters;
+}
+
+function extractDocMetadata(markdownText: string, defaultTitle: string) {
+  let title = defaultTitle;
+  let subtitle = '';
+  const lines = markdownText.split('\n');
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('LECTURE TITLE:') || trimmed.startsWith('НАЗВАНИЕ ЛЕКЦИИ:')) {
+      const idx = trimmed.indexOf(':');
+      if (idx !== -1) title = trimmed.substring(idx + 1).trim();
+    } else if (trimmed.startsWith('SUBTITLE:') || trimmed.startsWith('ПОДЗАГОЛОВОК:')) {
+      const idx = trimmed.indexOf(':');
+      if (idx !== -1) subtitle = trimmed.substring(idx + 1).trim();
+    } else if (trimmed.startsWith('# ') && !trimmed.startsWith('## ') && title === defaultTitle) {
+      title = trimmed.replace(/^#\s+/, '').trim();
+    }
+  }
+
+  return { title, subtitle };
+}
+
+/**
+ * Generates a Landscape Parallel Table Word Document (Side-by-Side)
+ */
+async function exportBilingualParallelDocx(baseName: string, englishTranscript: string, russianTranslation: string): Promise<void> {
+  const meta = extractDocMetadata(russianTranslation || englishTranscript, baseName);
+
+  const titleParas = [
+    new Paragraph({
+      heading: HeadingLevel.TITLE,
+      spacing: { before: 100, after: 80 },
+      children: [
+        new TextRun({
+          text: meta.title,
+          bold: true,
+          size: 32,
+          color: '1E3A8A',
+          font: 'Georgia'
+        })
+      ]
+    }),
+    new Paragraph({
+      spacing: { before: 0, after: 200 },
+      children: [
+        new TextRun({
+          text: 'Parallel Bilingual Edition: Verbatim English Discourse & Canonical Russian Translation (Vedabase.io Standard)',
+          italics: true,
+          size: 19,
+          color: '64748B',
+          font: 'Georgia'
+        })
+      ]
+    })
+  ];
+
+  const tableRows: TableRow[] = [
+    new TableRow({
+      tableHeader: true,
+      cantSplit: true,
+      children: [
+        new TableCell({
+          width: { size: 50, type: WidthType.PERCENTAGE },
+          shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: 'ORIGINAL VERBATIM ENGLISH DISCOURSE',
+                  bold: true,
+                  size: 20,
+                  color: 'FFFFFF',
+                  font: 'Georgia'
+                })
+              ]
+            })
+          ]
+        }),
+        new TableCell({
+          width: { size: 50, type: WidthType.PERCENTAGE },
+          shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
+          children: [
+            new Paragraph({
+              alignment: AlignmentType.CENTER,
+              children: [
+                new TextRun({
+                  text: 'ПОЛНЫЙ ДОСЛОВНЫЙ ПЕРЕВОД (VEDABASE.IO)',
+                  bold: true,
+                  size: 20,
+                  color: 'FFFFFF',
+                  font: 'Georgia'
+                })
+              ]
+            })
+          ]
+        })
+      ]
+    })
+  ];
+
+  const enChapters = splitIntoChapters(englishTranscript);
+  const ruChapters = splitIntoChapters(russianTranslation);
+
+  if (enChapters.length > 0 && ruChapters.length > 0) {
+    const maxChapters = Math.max(enChapters.length, ruChapters.length);
+
+    for (let c = 0; c < maxChapters; c++) {
+      const enCh = enChapters[c] || { title: '', timestamp: '', paragraphs: [] };
+      const ruCh = ruChapters[c] || { title: '', timestamp: '', paragraphs: [] };
+
+      // Chapter Header Row with Amber Highlight
+      const chTimestamp = enCh.timestamp || ruCh.timestamp || '';
+      const enChTitle = enCh.title || '';
+      const ruChTitle = ruCh.title || '';
+
+      if (chTimestamp || enChTitle || ruChTitle) {
+        tableRows.push(
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                shading: { fill: 'FEF3C7', type: ShadingType.CLEAR },
+                children: [
+                  new Paragraph({
+                    heading: HeadingLevel.HEADING_2,
+                    spacing: { before: 80, after: 80 },
+                    children: [
+                      ...(chTimestamp ? [new TextRun({ text: `${chTimestamp} `, bold: true, size: 21, color: 'B45309', font: 'Georgia' })] : []),
+                      new TextRun({ text: enChTitle, bold: true, size: 22, color: '1E3A8A', font: 'Georgia' })
+                    ]
+                  })
+                ]
+              }),
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                shading: { fill: 'FEF3C7', type: ShadingType.CLEAR },
+                children: [
+                  new Paragraph({
+                    heading: HeadingLevel.HEADING_2,
+                    spacing: { before: 80, after: 80 },
+                    children: [
+                      ...(chTimestamp ? [new TextRun({ text: `${chTimestamp} `, bold: true, size: 21, color: 'B45309', font: 'Georgia' })] : []),
+                      new TextRun({ text: ruChTitle, bold: true, size: 22, color: '1E3A8A', font: 'Georgia' })
+                    ]
+                  })
+                ]
+              })
+            ]
+          })
+        );
+      }
+
+      // Paragraph Rows for this Chapter
+      const maxParas = Math.max(enCh.paragraphs.length, ruCh.paragraphs.length);
+      for (let p = 0; p < maxParas; p++) {
+        const enP = enCh.paragraphs[p] || '';
+        const ruP = ruCh.paragraphs[p] || '';
+
+        const enParas = enP ? markdownToDocxParagraphs(enP) : [new Paragraph('')];
+        const ruParas = ruP ? markdownToDocxParagraphs(ruP) : [new Paragraph('')];
+
+        tableRows.push(
+          new TableRow({
+            cantSplit: true,
+            children: [
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                children: enParas
+              }),
+              new TableCell({
+                width: { size: 50, type: WidthType.PERCENTAGE },
+                children: ruParas
+              })
+            ]
+          })
+        );
+      }
+    }
+  } else {
+    // Fallback: block by block
     const enBlocks = englishTranscript.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
     const ruBlocks = russianTranslation.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean);
     const maxRows = Math.max(enBlocks.length, ruBlocks.length);
-
-    const titleParas = [
-      new Paragraph({
-        heading: HeadingLevel.TITLE,
-        spacing: { before: 100, after: 80 },
-        children: [
-          new TextRun({
-            text: `${baseName}`,
-            bold: true,
-            size: 32,
-            color: '1E3A8A',
-            font: 'Georgia'
-          })
-        ]
-      }),
-      new Paragraph({
-        spacing: { before: 0, after: 200 },
-        children: [
-          new TextRun({
-            text: 'Parallel Bilingual Edition: Verbatim English Discourse & Canonical Russian Translation (Vedabase.io Standard)',
-            italics: true,
-            size: 19,
-            color: '64748B',
-            font: 'Georgia'
-          })
-        ]
-      })
-    ];
-
-    const tableRows: TableRow[] = [
-      new TableRow({
-        tableHeader: true,
-        cantSplit: true,
-        children: [
-          new TableCell({
-            width: { size: 50, type: WidthType.PERCENTAGE },
-            shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: 'ORIGINAL VERBATIM ENGLISH DISCOURSE',
-                    bold: true,
-                    size: 20,
-                    color: 'FFFFFF',
-                    font: 'Georgia'
-                  })
-                ]
-              })
-            ]
-          }),
-          new TableCell({
-            width: { size: 50, type: WidthType.PERCENTAGE },
-            shading: { fill: '1E3A8A', type: ShadingType.CLEAR },
-            children: [
-              new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [
-                  new TextRun({
-                    text: 'ПОЛНЫЙ ДОСЛОВНЫЙ ПЕРЕВОД (VEDABASE.IO)',
-                    bold: true,
-                    size: 20,
-                    color: 'FFFFFF',
-                    font: 'Georgia'
-                  })
-                ]
-              })
-            ]
-          })
-        ]
-      })
-    ];
 
     for (let idx = 0; idx < maxRows; idx++) {
       const enText = enBlocks[idx] || '';
@@ -500,49 +684,195 @@ export async function downloadDocxTranscript(options: DocxExportOptions): Promis
         })
       );
     }
-
-    const bilingualTable = new Table({
-      width: { size: 100, type: WidthType.PERCENTAGE },
-      rows: tableRows
-    });
-
-    const doc = new Document({
-      styles: {
-        default: {
-          document: {
-            run: { font: 'Georgia', size: 21, color: '1E293B' },
-            paragraph: { spacing: { line: 260, after: 100 } }
-          }
-        }
-      },
-      sections: [
-        {
-          properties: {
-            page: {
-              size: { orientation: PageOrientation.LANDSCAPE },
-              margin: { top: 900, right: 900, bottom: 900, left: 900 }
-            }
-          },
-          children: [...titleParas, bilingualTable]
-        }
-      ]
-    });
-
-    const blob = await Packer.toBlob(doc);
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${baseName}_bilingual.docx`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    return;
   }
 
-  const paragraphs = activeTab === 'russian'
-    ? markdownToDocxParagraphs(russianTranslation)
-    : markdownToDocxParagraphs(englishTranscript);
+  const bilingualTable = new Table({
+    width: { size: 100, type: WidthType.PERCENTAGE },
+    rows: tableRows
+  });
+
+  const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Georgia', size: 21, color: '1E293B' },
+          paragraph: { spacing: { line: 260, after: 100 } }
+        }
+      }
+    },
+    sections: [
+      {
+        properties: {
+          page: {
+            size: { orientation: PageOrientation.LANDSCAPE },
+            margin: { top: 900, right: 900, bottom: 900, left: 900 }
+          }
+        },
+        children: [...titleParas, bilingualTable]
+      }
+    ]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${baseName}_bilingual_parallel.docx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Generates a Portrait Sequential Complete Book Word Document (Part I English + Part II Russian)
+ */
+async function exportBilingualBookDocx(baseName: string, englishTranscript: string, russianTranslation: string): Promise<void> {
+  const meta = extractDocMetadata(russianTranslation || englishTranscript, baseName);
+
+  const enParas = markdownToDocxParagraphs(englishTranscript);
+  const ruParas = markdownToDocxParagraphs(russianTranslation);
+
+  const doc = new Document({
+    styles: {
+      default: {
+        document: {
+          run: { font: 'Georgia', size: 22, color: '1E293B' },
+          paragraph: { spacing: { line: 280, after: 140 } }
+        }
+      }
+    },
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: { top: 1440, right: 1440, bottom: 1440, left: 1440 }
+          }
+        },
+        children: [
+          new Paragraph({
+            heading: HeadingLevel.TITLE,
+            spacing: { before: 120, after: 80 },
+            children: [
+              new TextRun({
+                text: meta.title,
+                bold: true,
+                size: 36,
+                color: '1E3A8A',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          new Paragraph({
+            spacing: { before: 0, after: 240 },
+            children: [
+              new TextRun({
+                text: 'Bilingual Complete Edition: Original Verbatim English Discourse & Canonical Russian Translation (Vedabase.io Standard)',
+                italics: true,
+                size: 20,
+                color: '64748B',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          new Paragraph({ children: [new PageBreak()] }),
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: 'PART I: ORIGINAL VERBATIM ENGLISH DISCOURSE',
+                bold: true,
+                size: 28,
+                color: '1E3A8A',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          new Paragraph({
+            spacing: { before: 0, after: 200 },
+            children: [
+              new TextRun({
+                text: 'Complete Verbatim Transcription with Timestamps and Sanskrit Citations',
+                italics: true,
+                size: 19,
+                color: '64748B',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          ...enParas,
+          new Paragraph({ children: [new PageBreak()] }),
+          new Paragraph({
+            heading: HeadingLevel.HEADING_1,
+            spacing: { before: 240, after: 120 },
+            children: [
+              new TextRun({
+                text: 'ЧАСТЬ II: ПОЛНЫЙ АВТОРИЗОВАННЫЙ РУССКИЙ ПЕРЕВОД',
+                bold: true,
+                size: 28,
+                color: '1E3A8A',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          new Paragraph({
+            spacing: { before: 0, after: 200 },
+            children: [
+              new TextRun({
+                text: 'Канонический литературный перевод с сохранением санскритской терминологии (Стандарт Vedabase.io)',
+                italics: true,
+                size: 19,
+                color: '64748B',
+                font: 'Georgia'
+              })
+            ]
+          }),
+          ...ruParas
+        ]
+      }
+    ]
+  });
+
+  const blob = await Packer.toBlob(doc);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${baseName}_bilingual_book.docx`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Builds and downloads a professional Word (.docx) document
+ */
+export async function downloadDocxTranscript(options: DocxExportOptions): Promise<void> {
+  const {
+    fileName,
+    activeTab = 'english',
+    englishTranscript = '',
+    russianTranslation = '',
+    bilingualFormat = 'parallel'
+  } = options;
+  const baseName = fileName.replace(/\.[^/.]+$/, '');
+
+  // 1. Bilingual Export
+  if (activeTab === 'bilingual') {
+    if (bilingualFormat === 'book') {
+      await exportBilingualBookDocx(baseName, englishTranscript, russianTranslation);
+      return;
+    } else {
+      await exportBilingualParallelDocx(baseName, englishTranscript, russianTranslation);
+      return;
+    }
+  }
+
+  // 2. Single Language Export (Strict tab isolation)
+  const isRussian = activeTab === 'russian';
+  const targetText = isRussian ? russianTranslation : englishTranscript;
+  const paragraphs = markdownToDocxParagraphs(targetText);
 
   const doc = new Document({
     styles: {
@@ -580,7 +910,7 @@ export async function downloadDocxTranscript(options: DocxExportOptions): Promis
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `${baseName}_${activeTab}.docx`;
+  link.download = `${baseName}_${isRussian ? 'russian' : 'english'}.docx`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

@@ -14,7 +14,8 @@ import {
   Clock,
   CheckCircle2,
   Printer,
-  BookOpen
+  BookOpen,
+  ChevronDown
 } from 'lucide-react';
 import { downloadDocxTranscript } from '../services/docxExport';
 import { SparkRenderer } from './SparkRenderer';
@@ -53,14 +54,31 @@ export const TranscriptionViewer: React.FC<TranscriptionViewerProps> = ({
   const [viewEdition, setViewEdition] = useState<'raw' | 'spark'>('raw');
   const [copied, setCopied] = useState(false);
   const [isExportingDocx, setIsExportingDocx] = useState(false);
+  const [showBilingualMenu, setShowBilingualMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Autoscroll and timestamps are OFF by default
   const [autoScroll, setAutoScroll] = useState(false);
   const [showTimestamps, setShowTimestamps] = useState(false);
   const textEndRef = useRef<HTMLDivElement>(null);
+  const bilingualMenuRef = useRef<HTMLDivElement>(null);
 
   const t = translations[lang].viewer;
+
+  // Close bilingual menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (bilingualMenuRef.current && !bilingualMenuRef.current.contains(e.target as Node)) {
+        setShowBilingualMenu(false);
+      }
+    };
+    if (showBilingualMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showBilingualMenu]);
 
   // Switch to Russian when translation starts
   useEffect(() => {
@@ -180,8 +198,8 @@ export const TranscriptionViewer: React.FC<TranscriptionViewerProps> = ({
     const ru = showTimestamps ? russianTranslation : cleanTimestamps(russianTranslation);
     let mdContent = '';
 
-    if (activeTab === 'bilingual' || (transcript && russianTranslation)) {
-      mdContent = `# ${baseName} — Bilingual Lecture Transcript\n\n*English Original & Russian Translation (VaniVoice AI)*\n\n---\n\n## 🇬🇧 English Transcript\n\n${en}\n\n---\n\n## 🇷🇺 Russian Translation\n\n${ru}`;
+    if (activeTab === 'bilingual') {
+      mdContent = `# ${baseName} — Bilingual Edition (EN + RU)\n\n*Original Verbatim English Discourse & Canonical Russian Translation (VaniVoice AI)*\n\n---\n\n## 🇬🇧 PART I: ORIGINAL VERBATIM ENGLISH DISCOURSE\n\n${en}\n\n---\n\n## 🇷🇺 ЧАСТЬ II: ПОЛНЫЙ АВТОРИЗОВАННЫЙ РУССКИЙ ПЕРЕВОД\n\n${ru}\n`;
     } else if (activeTab === 'russian') {
       mdContent = `# ${baseName} — Русский перевод лекции\n\n*Литературный перевод (VaniVoice AI)*\n\n---\n\n${ru}`;
     } else {
@@ -197,6 +215,21 @@ export const TranscriptionViewer: React.FC<TranscriptionViewerProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadBilingualMd = () => {
+    const baseName = fileName.replace(/\.[^/.]+$/, '');
+    const en = isSparkActive ? sparkTranscript : (showTimestamps ? transcript : cleanTimestamps(transcript));
+    const ru = showTimestamps ? russianTranslation : cleanTimestamps(russianTranslation);
+    const mdContent = `# ${baseName} — Bilingual Edition (EN + RU)\n\n*Original Verbatim English Discourse & Canonical Russian Translation (VaniVoice AI)*\n\n---\n\n## 🇬🇧 PART I: ORIGINAL VERBATIM ENGLISH DISCOURSE\n\n${en}\n\n---\n\n## 🇷🇺 ЧАСТЬ II: ПОЛНЫЙ АВТОРИЗОВАННЫЙ РУССКИЙ ПЕРЕВОД\n\n${ru}\n`;
+
+    const blob = new Blob([mdContent], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${baseName}_bilingual.md`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDownloadDocx = async () => {
     try {
       setIsExportingDocx(true);
@@ -205,10 +238,29 @@ export const TranscriptionViewer: React.FC<TranscriptionViewerProps> = ({
         fileName,
         activeTab,
         englishTranscript: enText,
-        russianTranslation
+        russianTranslation,
+        bilingualFormat: 'parallel'
       });
     } catch (err) {
       console.error('Docx export failed:', err);
+    } finally {
+      setIsExportingDocx(false);
+    }
+  };
+
+  const handleDownloadBilingualDocx = async (format: 'parallel' | 'book' = 'parallel') => {
+    try {
+      setIsExportingDocx(true);
+      const enText = isSparkActive ? sparkTranscript : transcript;
+      await downloadDocxTranscript({
+        fileName,
+        activeTab: 'bilingual',
+        englishTranscript: enText,
+        russianTranslation,
+        bilingualFormat: format
+      });
+    } catch (err) {
+      console.error('Bilingual Docx export failed:', err);
     } finally {
       setIsExportingDocx(false);
     }
@@ -344,7 +396,97 @@ export const TranscriptionViewer: React.FC<TranscriptionViewerProps> = ({
             <span>{copied ? t.copiedBtn : t.copyBtn}</span>
           </button>
 
-          {/* Word .DOCX Download */}
+          {/* Bilingual Export Menu (Visible when both EN and RU are present) */}
+          {russianTranslation && (
+            <div className="relative inline-block text-left" ref={bilingualMenuRef}>
+              <button
+                type="button"
+                onClick={() => setShowBilingualMenu(!showBilingualMenu)}
+                disabled={isExportingDocx}
+                className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl bg-gradient-to-r from-indigo-950/90 via-blue-950/90 to-purple-950/90 hover:from-indigo-900 hover:to-purple-900 text-indigo-200 border border-indigo-500/50 transition-all shadow-md shadow-indigo-950/40 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+                title={lang === 'ru' ? 'Скачать двуязычный документ Word (.docx)' : 'Download Bilingual Word (.docx)'}
+              >
+                {isExportingDocx ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-indigo-400" />
+                ) : (
+                  <BookOpen className="w-3.5 h-3.5 text-indigo-400" />
+                )}
+                <span>{t.bilingualDocxBtn}</span>
+                <ChevronDown className={`w-3 h-3 text-indigo-400 transition-transform duration-200 ${showBilingualMenu ? 'rotate-180' : ''}`} />
+              </button>
+
+              {showBilingualMenu && (
+                <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-slate-900/95 backdrop-blur-md border border-slate-700 shadow-2xl py-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
+                  <div className="px-3.5 py-1 border-b border-slate-800 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                    {t.bilingualExportTitle}
+                  </div>
+
+                  {/* 1. Parallel Table DOCX */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBilingualMenu(false);
+                      handleDownloadBilingualDocx('parallel');
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-slate-800/80 text-slate-200 flex items-start gap-2.5 transition-colors cursor-pointer group"
+                  >
+                    <div className="p-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 group-hover:bg-indigo-500/20 shrink-0 mt-0.5">
+                      <Columns2 className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white group-hover:text-indigo-300 transition-colors">
+                        {t.bilingualParallel}
+                      </div>
+                      <div className="text-[11px] text-slate-400 leading-tight mt-0.5">
+                        {t.bilingualParallelSub}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 2. Complete Book DOCX */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBilingualMenu(false);
+                      handleDownloadBilingualDocx('book');
+                    }}
+                    className="w-full text-left px-3.5 py-2.5 hover:bg-slate-800/80 text-slate-200 flex items-start gap-2.5 border-t border-slate-800/60 transition-colors cursor-pointer group"
+                  >
+                    <div className="p-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 group-hover:bg-cyan-500/20 shrink-0 mt-0.5">
+                      <BookOpen className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-white group-hover:text-cyan-300 transition-colors">
+                        {t.bilingualBook}
+                      </div>
+                      <div className="text-[11px] text-slate-400 leading-tight mt-0.5">
+                        {t.bilingualBookSub}
+                      </div>
+                    </div>
+                  </button>
+
+                  {/* 3. Bilingual Markdown */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowBilingualMenu(false);
+                      handleDownloadBilingualMd();
+                    }}
+                    className="w-full text-left px-3.5 py-2 hover:bg-slate-800/80 text-slate-200 flex items-center gap-2.5 border-t border-slate-800/60 transition-colors cursor-pointer group"
+                  >
+                    <div className="p-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 group-hover:bg-amber-500/20 shrink-0">
+                      <Download className="w-3.5 h-3.5" />
+                    </div>
+                    <span className="font-medium text-slate-300 group-hover:text-amber-300">
+                      {t.bilingualMdBtn}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Word .DOCX Download (Active Tab) */}
           <button
             onClick={handleDownloadDocx}
             disabled={isExportingDocx}
