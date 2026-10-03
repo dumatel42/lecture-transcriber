@@ -11,13 +11,118 @@ export interface UploadedFileInfo {
   state: 'PROCESSING' | 'ACTIVE' | 'FAILED';
 }
 
-// Full production models (heavy, robust Flash models with large context retention; Lite models banned)
-export const PRODUCTION_MODELS = [
+// Tier 1: Modern Flagship & Auto-Updating Flash (High availability, fast, large context, zero Lite)
+export const TIER_1_MODELS = [
+  'gemini-flash-latest',
+  'gemini-2.5-flash',
   'gemini-3.6-flash',
-  'gemini-3.8-flash',
-  'gemini-3.5-flash',
+  'gemini-3.8-flash'
+];
+
+// Tier 2: Battle-Tested Stable Flash Backups
+export const TIER_2_MODELS = [
   'gemini-3.7-flash',
-  'gemini-flash-latest'
+  'gemini-3.5-flash',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-flash'
+];
+
+// Tier 3: Emergency Pro Heavy Reserve (Ultimate fallback if all Flash instances fail or overload)
+export const TIER_3_MODELS = [
+  'gemini-pro-latest',
+  'gemini-2.5-pro',
+  'gemini-1.5-pro'
+];
+
+// Combined production cascade pool in order of priority (Full models only; Lite models strictly banned)
+export const DEFAULT_PRODUCTION_MODELS = [
+  ...TIER_1_MODELS,
+  ...TIER_2_MODELS,
+  ...TIER_3_MODELS
+];
+
+// Active mutable pool enriched by discoverAvailableModels()
+export let PRODUCTION_MODELS: string[] = [...DEFAULT_PRODUCTION_MODELS];
+
+let isModelsDiscovered = false;
+
+/**
+ * Dynamically queries Google API to verify available models for the given API key,
+ * strictly filtering out any Lite/8b models and ordering by resilience tiers.
+ */
+export async function discoverAvailableModels(apiKey: string): Promise<string[]> {
+  if (isModelsDiscovered && PRODUCTION_MODELS.length > 0) {
+    return PRODUCTION_MODELS;
+  }
+
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    if (!res.ok) {
+      console.warn(`Dynamic model check returned HTTP ${res.status}, using curated default cascade.`);
+      return PRODUCTION_MODELS;
+    }
+
+    const data = await res.json();
+    if (!data.models || !Array.isArray(data.models)) {
+      return PRODUCTION_MODELS;
+    }
+
+    const availableNames: string[] = data.models
+      .filter((m: any) => m.supportedGenerationMethods?.includes('generateContent'))
+      .map((m: any) => (m.name || '').replace(/^models\//, ''))
+      .filter((name: string) => {
+        const lower = name.toLowerCase();
+        // Strict prohibition: filter out any Lite or 8B models (prevents audio truncation)
+        const isLite = lower.includes('lite') || lower.includes('8b');
+        // Filter out image/tts/custom tools specific models
+        const isSpecialized = lower.includes('image') || lower.includes('tts') || lower.includes('customtools') || lower.includes('banana');
+        return !isLite && !isSpecialized && (lower.includes('flash') || lower.includes('pro'));
+      });
+
+    const discoveredSet = new Set(availableNames);
+    const reordered: string[] = [];
+
+    // 1. First priority: Our curated cascade in order, provided Google confirms it's available
+    for (const model of DEFAULT_PRODUCTION_MODELS) {
+      if (discoveredSet.has(model)) {
+        reordered.push(model);
+        discoveredSet.delete(model);
+      }
+    }
+
+    // 2. Append any newly released Flash models from Google not yet hardcoded
+    for (const remaining of discoveredSet) {
+      if (remaining.toLowerCase().includes('flash')) {
+        reordered.push(remaining);
+      }
+    }
+
+    // 3. Append any newly released Pro models as tail fallback
+    for (const remaining of discoveredSet) {
+      if (remaining.toLowerCase().includes('pro') && !reordered.includes(remaining)) {
+        reordered.push(remaining);
+      }
+    }
+
+    if (reordered.length > 0) {
+      PRODUCTION_MODELS = reordered;
+      isModelsDiscovered = true;
+      console.log('Dynamic model discovery completed. Active cascade order:', PRODUCTION_MODELS);
+    }
+  } catch (err: any) {
+    console.warn('Failed to dynamically query Google models, falling back to default pool:', err?.message);
+  }
+
+  return PRODUCTION_MODELS;
+}
+
+// Canonical safety settings disabling false positive blocks on scriptural prayers
+export const SACRED_TEXT_SAFETY_SETTINGS = [
+  { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+  { category: 'HARM_CATEGORY_CIVIC_INTEGRITY', threshold: 'BLOCK_NONE' }
 ];
 
 // Multi-Key Pool for automatic failover (securely loaded from environment variables)
@@ -198,34 +303,61 @@ export async function streamTranscription(
   let lastError: Error | null = null;
   let activeKeyToUse = apiKey;
 
-  for (const model of PRODUCTION_MODELS) {
+  // Dynamically verify and prioritize active Google models
+  const modelsToTry = await discoverAvailableModels(activeKeyToUse).catch(() => PRODUCTION_MODELS);
+
+  for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
+    const model = modelsToTry[mIdx];
+    const isFallback = mIdx > 0;
+
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         if (onModelSelected) {
-          onModelSelected(model);
+          onModelSelected(isFallback ? `${model} (fallback)` : model);
         }
         return await executeModelStream(model, fileUri, mimeType, prompt, activeKeyToUse, onChunk);
       } catch (err: any) {
         console.warn(`Model ${model} (attempt ${attempt + 1}) failed:`, err.message);
         lastError = err;
 
-        const isQuotaOrBusy = err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED') || err.message?.includes('503');
+        const msg = err.message || '';
+        const isQuotaOrBusy = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('503') || msg.includes('502');
+        const isRecitationOrBlock = msg.includes('RECITATION') || msg.includes('SAFETY');
+        const isNotFound = msg.includes('404') || msg.includes('NOT_FOUND');
 
+        // On 404 (model deprecated or renamed by Google), immediately advance to next model without retry
+        if (isNotFound) {
+          console.warn(`Model ${model} returned 404, bypassing to next model in cascade.`);
+          break;
+        }
+
+        // On RECITATION / SAFETY block, advance to fallback model
+        if (isRecitationOrBlock) {
+          console.warn(`Model ${model} hit content filter / recitation, advancing to fallback model.`);
+          break;
+        }
+
+        // On 429 / 503: rotate default key if available
         if (isQuotaOrBusy) {
-          if (!localStorage.getItem('lectorclean_custom_api_key')) {
+          if (!localStorage.getItem('lectorclean_custom_api_key') && DEFAULT_KEY_POOL.length > 1) {
             activeKeyToUse = rotateToNextDefaultKey();
             if (onKeyRotated) onKeyRotated(currentKeyIndex + 1);
           }
-          await new Promise((r) => setTimeout(r, 1200));
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
           continue;
         }
 
-        throw err;
+        // For unexpected error on attempt 1, brief pause then retry
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 800));
+          continue;
+        }
       }
     }
+    console.warn(`Cascading from ${model} to next model in pool...`);
   }
 
-  throw lastError || new Error('All available Gemini models are currently busy. Please try again shortly.');
+  throw lastError || new Error('All available Gemini models in the cascade are currently busy. Please try again shortly.');
 }
 
 /**
@@ -245,34 +377,56 @@ export async function streamInlineAudioTranscription(
   let lastError: Error | null = null;
   let activeKeyToUse = apiKey;
 
-  for (const model of PRODUCTION_MODELS) {
+  const modelsToTry = await discoverAvailableModels(activeKeyToUse).catch(() => PRODUCTION_MODELS);
+
+  for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
+    const model = modelsToTry[mIdx];
+    const isFallback = mIdx > 0;
+
     for (let attempt = 0; attempt < 2; attempt++) {
       try {
         if (onModelSelected) {
-          onModelSelected(model);
+          onModelSelected(isFallback ? `${model} (fallback)` : model);
         }
         return await executeInlineModelStream(model, audioBase64, mimeType, prompt, activeKeyToUse, onChunk);
       } catch (err: any) {
         console.warn(`Model ${model} (attempt ${attempt + 1}) failed:`, err.message);
         lastError = err;
 
-        const isQuotaOrBusy = err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED') || err.message?.includes('503');
+        const msg = err.message || '';
+        const isQuotaOrBusy = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('503') || msg.includes('502');
+        const isRecitationOrBlock = msg.includes('RECITATION') || msg.includes('SAFETY');
+        const isNotFound = msg.includes('404') || msg.includes('NOT_FOUND');
+
+        if (isNotFound) {
+          console.warn(`Model ${model} returned 404, bypassing to next model in cascade.`);
+          break;
+        }
+
+        if (isRecitationOrBlock) {
+          console.warn(`Model ${model} hit content filter / recitation, advancing to fallback model.`);
+          break;
+        }
 
         if (isQuotaOrBusy) {
-          if (!localStorage.getItem('lectorclean_custom_api_key')) {
+          if (!localStorage.getItem('lectorclean_custom_api_key') && DEFAULT_KEY_POOL.length > 1) {
             activeKeyToUse = rotateToNextDefaultKey();
             if (onKeyRotated) onKeyRotated(currentKeyIndex + 1);
           }
-          await new Promise((r) => setTimeout(r, 1200));
+          await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)));
           continue;
         }
 
-        throw err;
+        if (attempt === 0) {
+          await new Promise((r) => setTimeout(r, 800));
+          continue;
+        }
       }
     }
+    console.warn(`Cascading from ${model} to next model in pool...`);
   }
 
-  throw lastError || new Error('All available Gemini models are currently busy. Please try again shortly.');
+  throw lastError || new Error('All available Gemini models in the cascade are currently busy. Please try again shortly.');
 }
 
 async function executeInlineModelStream(
@@ -306,7 +460,8 @@ async function executeInlineModelStream(
     generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 65536
-    }
+    },
+    safetySettings: SACRED_TEXT_SAFETY_SETTINGS
   };
 
   let resp: Response;
@@ -368,7 +523,8 @@ async function executeModelStream(
     generationConfig: {
       temperature: 0.2,
       maxOutputTokens: 65536
-    }
+    },
+    safetySettings: SACRED_TEXT_SAFETY_SETTINGS
   };
 
   let resp: Response;
@@ -617,7 +773,10 @@ Transcript to translate into publication-quality Russian:
   let lastError: Error | null = null;
   let activeKeyToUse = apiKey;
 
-  for (const model of PRODUCTION_MODELS) {
+  const modelsToTry = await discoverAvailableModels(activeKeyToUse).catch(() => PRODUCTION_MODELS);
+
+  for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
+    const model = modelsToTry[mIdx];
     try {
       const rawUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${activeKeyToUse}`;
       const proxiedUrl = buildApiUrl(rawUrl);
@@ -631,7 +790,8 @@ Transcript to translate into publication-quality Russian:
         generationConfig: {
           temperature: 0.2,
           maxOutputTokens: 65536
-        }
+        },
+        safetySettings: SACRED_TEXT_SAFETY_SETTINGS
       };
 
       let resp: Response;
@@ -664,25 +824,34 @@ Transcript to translate into publication-quality Russian:
     } catch (err: any) {
       console.warn(`Translation attempt failed with ${model}:`, err.message);
       lastError = err;
-      const is503 = err.message?.includes('503') || err.message?.includes('high demand') || err.message?.includes('UNAVAILABLE');
-      const is429 = err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED');
 
-      if (is503) {
-        console.warn('503 high demand spike detected. Backing off 4 seconds...');
-        await new Promise((r) => setTimeout(r, 4000));
+      const msg = err.message || '';
+      const is503 = msg.includes('503') || msg.includes('high demand') || msg.includes('UNAVAILABLE') || msg.includes('502');
+      const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+      const isNotFound = msg.includes('404') || msg.includes('NOT_FOUND');
+
+      if (isNotFound) {
+        console.warn(`Model ${model} returned 404, cascading to next model.`);
         continue;
       }
 
-      if (is429 && !localStorage.getItem('lectorclean_custom_api_key')) {
-        activeKeyToUse = rotateToNextDefaultKey();
+      if (is503) {
+        console.warn('503/502 high demand spike detected. Cascading to next model in pool...');
         await new Promise((r) => setTimeout(r, 1500));
         continue;
       }
-      await new Promise((r) => setTimeout(r, 1200));
+
+      if (is429 && !localStorage.getItem('lectorclean_custom_api_key') && DEFAULT_KEY_POOL.length > 1) {
+        activeKeyToUse = rotateToNextDefaultKey();
+        await new Promise((r) => setTimeout(r, 1000));
+        continue;
+      }
+
+      await new Promise((r) => setTimeout(r, 800));
     }
   }
 
-  throw lastError || new Error('Failed to translate transcript into Russian. Please retry.');
+  throw lastError || new Error('Failed to translate transcript into Russian. All models busy.');
 }
 
 /**
@@ -766,7 +935,10 @@ Raw transcript to format:
   let lastError: Error | null = null;
   let activeKeyToUse = apiKey;
 
-  for (const model of PRODUCTION_MODELS) {
+  const modelsToTry = await discoverAvailableModels(activeKeyToUse).catch(() => PRODUCTION_MODELS);
+
+  for (let mIdx = 0; mIdx < modelsToTry.length; mIdx++) {
+    const model = modelsToTry[mIdx];
     try {
       const rawUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:streamGenerateContent?alt=sse&key=${activeKeyToUse}`;
       const proxiedUrl = buildApiUrl(rawUrl);
@@ -780,7 +952,8 @@ Raw transcript to format:
         generationConfig: {
           temperature: 0.2,
           maxOutputTokens: 65536
-        }
+        },
+        safetySettings: SACRED_TEXT_SAFETY_SETTINGS
       };
 
       let resp: Response;
@@ -813,16 +986,34 @@ Raw transcript to format:
     } catch (err: any) {
       console.warn(`Spark formatting attempt failed with ${model}:`, err.message);
       lastError = err;
-      if (err.message?.includes('429') && !localStorage.getItem('lectorclean_custom_api_key')) {
+
+      const msg = err.message || '';
+      const is503 = msg.includes('503') || msg.includes('high demand') || msg.includes('UNAVAILABLE') || msg.includes('502');
+      const is429 = msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
+      const isNotFound = msg.includes('404') || msg.includes('NOT_FOUND');
+
+      if (isNotFound) {
+        console.warn(`Model ${model} returned 404, cascading to next model.`);
+        continue;
+      }
+
+      if (is503) {
+        console.warn('503/502 high demand spike detected. Cascading to next model in pool...');
+        await new Promise((r) => setTimeout(r, 1500));
+        continue;
+      }
+
+      if (is429 && !localStorage.getItem('lectorclean_custom_api_key') && DEFAULT_KEY_POOL.length > 1) {
         activeKeyToUse = rotateToNextDefaultKey();
         await new Promise((r) => setTimeout(r, 1000));
         continue;
       }
-      await new Promise((r) => setTimeout(r, 1200));
+
+      await new Promise((r) => setTimeout(r, 800));
     }
   }
 
-  throw lastError || new Error('Failed to format transcript into Spark style. Please retry.');
+  throw lastError || new Error('Failed to format transcript into Spark style. All models busy.');
 }
 
 /**
