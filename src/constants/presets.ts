@@ -6,17 +6,13 @@ export function buildPresetPrompt(
   includeTimestamps: boolean, 
   customScripture?: string
 ): string {
-  const timestampDirective = includeTimestamps
-    ? `3. THEMATIC CHAPTERING WITH TIMESTAMPS (EVERY 3-5 MINUTES):
+  // Chronological anchors are ALWAYS requested from Gemini to keep the model's temporal attention synchronized.
+  // The frontend automatically strips or displays them based on the user's toggle setting.
+  const timestampDirective = `3. THEMATIC CHAPTERING WITH CHRONOLOGICAL ANCHORS (EVERY 3-5 MINUTES):
    - Break the lecture into clear, thematic chapters approximately every 3 to 5 minutes, or whenever the subject advances.
    - Format every chapter heading in ALL CAPS prefixed with its starting timestamp:
-     [HH:MM:SS] THEMATIC CHAPTER TITLE IN ALL CAPS
-   - ABSOLUTE PROHIBITION: NEVER put timestamps on every line, sentence, or prayer verse. Timestamps belong ONLY in the chapter headings! The body text must flow like a polished publication.`
-    : `3. THEMATIC CHAPTERING (CLEAN READING MODE):
-   - Break the lecture into clear, thematic chapters approximately every 3 to 5 minutes, or whenever the subject advances.
-   - Format chapter headings as clean Markdown headers without time numbers:
-     ### THEMATIC CHAPTER TITLE IN ALL CAPS
-   - DO NOT output timestamps like [HH:MM:SS] in the text. The user needs this file to read like a book, article, or transcendental literature.
+     ### [HH:MM:SS] THEMATIC CHAPTER TITLE IN ALL CAPS
+   - ABSOLUTE PROHIBITION: NEVER put timestamps on every line, sentence, or prayer verse. Timestamps belong ONLY in the chapter headings! The body text must flow like a polished publication.
    - FULL RECORDING MANDATE (ZERO PREMATURE TRUNCATION):
      * The audio recording is a full continuous discourse (often 1 to 2+ hours). You must systematically transcribe from the very first spoken second (00:00:00) to the very final second of the audio recording.
      * ABSOLUTE PROHIBITION: NEVER stop early, never summarize, never synthesize an artificial conclusion or early prayer ("Hare Krishna"). Transcribe every sentence and paragraph continuously until the speaker actually finishes and the audio reaches its final seconds.`;
@@ -261,7 +257,7 @@ ${timestampDirective}
 7. FORMATTING HYGIENE: Output pure, clean Markdown without escaped characters (\\!, \\[, \\]) or &nbsp;.`;
 
     case 'custom':
-      return `Transcribe this audio recording accurately under the Golden Editorial Standard. Punctuate continuous speech cleanly. Format all Sanskrit terms in *italics* with IAST diacritics. ${customScripture && customScripture.trim().length > 0 ? `Priority scriptural focus: ${customScripture.trim()}.` : ''} ${includeTimestamps ? 'Include thematic chapter titles with timestamps [HH:MM:SS] once every 3-5 minutes.' : 'DO NOT include any time numbers.'}`;
+      return `Transcribe this audio recording accurately under the Golden Editorial Standard. Punctuate continuous speech cleanly. Format all Sanskrit terms in *italics* with IAST diacritics. ${customScripture && customScripture.trim().length > 0 ? `Priority scriptural focus: ${customScripture.trim()}.` : ''} Include thematic chapter titles with timestamps [HH:MM:SS] once every 3-5 minutes. Transcribe 100% of spoken words to the very end.`;
   }
 }
 
