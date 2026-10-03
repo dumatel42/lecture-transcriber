@@ -16,7 +16,10 @@ export function buildPresetPrompt(
    - Break the lecture into clear, thematic chapters approximately every 3 to 5 minutes, or whenever the subject advances.
    - Format chapter headings as clean Markdown headers without time numbers:
      ### THEMATIC CHAPTER TITLE IN ALL CAPS
-   - DO NOT output timestamps like [HH:MM:SS] in the text. The user needs this file to read like a book, article, or transcendental literature.`;
+   - DO NOT output timestamps like [HH:MM:SS] in the text. The user needs this file to read like a book, article, or transcendental literature.
+   - FULL RECORDING MANDATE (ZERO PREMATURE TRUNCATION):
+     * The audio recording is a full continuous discourse (often 1 to 2+ hours). You must systematically transcribe from the very first spoken second (00:00:00) to the very final second of the audio recording.
+     * ABSOLUTE PROHIBITION: NEVER stop early, never summarize, never synthesize an artificial conclusion or early prayer ("Hare Krishna"). Transcribe every sentence and paragraph continuously until the speaker actually finishes and the audio reaches its final seconds.`;
 
   const priorityFocusBlock = customScripture && customScripture.trim().length > 0
     ? `\n================================================================================
