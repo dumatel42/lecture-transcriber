@@ -1,250 +1,261 @@
+<div align="center">
+
 # 🎙️ VaniVoice AI (`lecture-transcriber`)
 
+### **[ 🇬🇧 Read in English (Current Document) ](#-documentation-navigator-pyramid-principle) &nbsp;•&nbsp; [ 🇷🇺 Читать на русском языке (README.ru.md) ](README.ru.md)**
+
+[![Language: English](https://img.shields.io/badge/Language-English-blue.svg?style=for-the-badge)](README.md)
+[![Language: Russian](https://img.shields.io/badge/Язык-Русский-red.svg?style=for-the-badge)](README.ru.md)
+<br/>
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Google Gemini API](https://img.shields.io/badge/AI-Google%20Gemini%20Flash%20(1M%20Context)-orange.svg)](https://aistudio.google.com/)
 [![Zero Cost](https://img.shields.io/badge/Cost-%240%2Fmonth%20(Free%20Tier)-brightgreen.svg)](https://aistudio.google.com/)
 [![Status](https://img.shields.io/badge/Deployment-Vercel%20Edge-black.svg)](https://lecture-transcriber-eta.vercel.app)
 
-> **Промышленная платформа монолитной транскрибации и теологического перевода 2–3 часовых аудиолекций с прецизионным санскритом (IAST) на базе Google Gemini Flash.**  
-> Создано для безупречного сохранения устной философской традиции, лекций ачарьев и академических дискурсов без сокращений, галлюцинаций и искажения терминологии.
+> **Industrial-grade monolithic transcription & theological translation platform for 2–3 hour audio discourses with precision Sanskrit (IAST) powered by Google Gemini Flash.**  
+> Built for the flawless preservation of oral philosophical traditions, spiritual discourses, and academic lectures without omissions, hallucinations, or phonetic corruption.
+
+🌐 **Live Web Application:** [https://lecture-transcriber-eta.vercel.app](https://lecture-transcriber-eta.vercel.app)  
+📦 **GitHub Repository:** [https://github.com/dumatel42/lecture-transcriber](https://github.com/dumatel42/lecture-transcriber)
+
+---
+</div>
+
+## 🧭 Documentation Navigator (Pyramid Principle)
+
+This documentation follows Barbara Minto’s **Pyramid Principle of Progressive Disclosure** — transitioning seamlessly from high-level understanding down into rigorous neural physics:
+
+* 🟢 [**Level 1: Bird's-Eye View (Quick Start in 2 Minutes)**](#-level-1-birds-eye-view-quick-start) — For listeners, book editors, and transcribers: what this is, why it costs $0 / month, and how to get results immediately (via web UI or Google AI Studio).
+* 🟡 [**Level 2: Engineering Depth & AI Physics**](#-level-2-engineering-depth--physics-of-ai) — For architects and engineers: why Whisper and 15-minute chunk slicing fail, anatomy of Lite model cutoffs, the mechanics of Chrono-Anchors, our 3-tiered fault-tolerant cascade, and bypassing `RECITATION` false positives.
+* 🔴 [**Level 3: Technical Passport & AI Agent Guidelines**](#-level-3-technical-passport-deployment--ai-agent-guide) — For developers looking to self-host, configure multi-key rotation pools, or continue development using **Cursor, Antigravity, Claude Code, or Cline**.
 
 ---
 
-## 🧭 Навигатор по документации (Принцип прогрессивного раскрытия)
+## 🟢 Level 1: Bird's-Eye View (Quick Start)
 
-Документация построена по принципу пирамиды — от верхнеуровневого понимания к глубокой инженерной физике:
+### 1. What Pain Point Does This Solve?
+Standard speech-to-text tools (Whisper, Otter.ai, commercial $20–$50/mo APIs) fail catastrophically on philosophical discourse and Eastern theology:
+1. **Phonetic Deafness:** They mutilate sacred terminology beyond recognition (*"smart"* instead of *smārta*, *"bucket"* instead of *bhakti*, *"pro pad"* instead of *Prabhupāda*).
+2. **Scriptural Hallucinations:** If a speaker quotes half a line of an ancient Sanskrit verse (*śloka*), generic AI invents the rest of the stanza from its training memory, destroying the authenticity of the live recording (1:1 Verbatim).
+3. **Premature Cutoff:** On long 1–3 hour recordings, standard tools lose synchronization, skip paragraphs, or enter infinite repetition loops.
 
-* 🟢 [**Уровень 1: Взгляд с высоты птичьего полёта**](#-уровень-1-взгляд-с-высоты-птичьего-полёта-быстрый-старт) — Для слушателей, редакторов и авторов: что это такое, почему $0 / месяц и как начать работу за 2 минуты (на сайте или в Google AI Studio).
-* 🟡 [**Уровень 2: Инженерная глубина и физика ИИ**](#-уровень-2-инженерная-глубина-архитектура-и-физика-ии) — Для архитекторов и разработчиков: почему Whisper и нарезка на чанки терпят крах, анатомия обрывов Lite-моделей, магия хроно-якорей, 3-уровневый каскад отказоустойчивости и преодоление цензуры `RECITATION`.
-* 🔴 [**Уровень 3: Технический паспорт и гайд для AI-агентов**](#-уровень-3-технический-паспорт-развертывание-и-ai-инструкции) — Для тех, кто хочет развернуть свой форк, настроить мульти-ключевой пул или продолжить разработку через **Cursor, Antigravity, Claude Code или Cline**.
-
----
-
-## 🟢 Уровень 1: Взгляд с высоты птичьего полёта (Быстрый старт)
-
-### 1. Какую боль решает сервис?
-Стандартные программы транскрибации (Whisper, Otter.ai, платные облачные API) не приспособлены для глубокой философии и санскрита:
-1. **Фонетическая глухота:** Они коверкают термины до неузнаваемости (*"smart"* вместо *smārta*, *"bucket"* вместо *bhakti*, *"pro pad"* вместо *Prabhupāda*).
-2. **Додумывание стихов:** Если лектор цитирует полстроки шлоки, обычный ИИ «дописывает» весь стих целиком из обучающей памяти, разрушая аутентичность живой речи (1:1 Verbatim).
-3. **Обрыв длинной речи:** На 15–20 минуте обычные транскрибаторы сбиваются, сокращают текст в краткую выжимку или уходят в бесконечный цикл повторов.
-
-**VaniVoice AI** напрямую «слушает» сырую аудио-спектрограмму через нейросеть **Google Gemini Flash**, мгновенно сопоставляет звуки с канонической базой терминов Vedabase IAST и выдает готовый книжный текст с развернутыми глаголами (`I am` вместо `I'm`) и аккуратными цитатами.
+**VaniVoice AI** listens directly to the raw multimodal audio spectrogram through **Google Gemini Flash**, matches phonemes against a canonical Vedabase IAST glossary, expands colloquial contractions (`I'm` ➔ `I am`), and formats blockquotes with bold citations ready for academic book publishing.
 
 ---
 
-### 2. Сколько это стоит?
-**100% Бесплатно ($0 / месяц).**  
-Вам **не требуется** подписка Google One AI Premium ($20/мес), ChatGPT Plus или платный биллинг Google Cloud.  
-Сервис работает через официальный бесплатный пул **Google AI Studio Free Tier**:
-* **1 500 запросов в сутки** на один бесплатный API-ключ.
-* **15 запросов в минуту (RPM)**.
-* **1 000 000 токенов контекста** (хватает для загрузки до 9.5 часов аудио за раз; 2-часовая лекция занимает всего ~250 000 токенов).
+### 2. How Much Does It Cost?
+**100% Free ($0 / Month).**  
+You **do not need** Google One AI Premium ($20/mo), ChatGPT Plus, or paid Google Cloud billing.  
+The system operates entirely on **Google AI Studio's Free Tier**:
+* **1,500 Requests Per Day (RPD)** per free API key.
+* **15 Requests Per Minute (RPM)**.
+* **1,000,000 Token Context Window** (accommodates up to 9.5 hours of audio in one shot; a typical 2-hour lecture consumes only ~250,000 tokens).
 
 ---
 
-### 3. Как начать работу прямо сейчас?
+### 3. Two Ways to Use It Right Now
 
-#### Способ А: Через готовый веб-интерфейс VaniVoice AI (Самый простой)
-1. Перейдите на сайт: 👉 **[lecture-transcriber-eta.vercel.app](https://lecture-transcriber-eta.vercel.app)**
-2. Перетащите аудиофайл лекции (`MP3`, `M4A`, `WAV`, `AAC` до 2 ГБ).
-3. Выберите пресет:
-   * **Вайшнавская лекция (Английский)** — для оригинальной речи англоязычных спикеров.
-   * **Вайшнавская лекция (Русская речь)** — для лекций на русском языке.
-   * **Оба спикера (Лектор + Переводчик)** — разделение синхронного перевода по ролям.
-4. Нажмите **«Начать транскрибацию»**.
-5. Скачайте готовый результат в формате Microsoft Word (`.docx`) или переведите на русский язык в 1 клик.
+#### Option A: Free VaniVoice AI Web App (Easiest)
+1. Open the web app: 👉 **[lecture-transcriber-eta.vercel.app](https://lecture-transcriber-eta.vercel.app)**
+2. Drag and drop your audio file (`MP3`, `M4A`, `WAV`, `AAC` up to 2 GB).
+3. Select your preset:
+   * **Vaishnava Lecture (English)** — for native English discourse.
+   * **Vaishnava Lecture (Russian)** — for native Russian discourses.
+   * **Both Speakers (Lecturer + Interpreter)** — dialogue mode tagging `[Lecturer (EN)]` and `[Interpreter (RU)]`.
+4. Click **"Start Transcription"**.
+5. Download publication-ready Microsoft Word (`.docx`) files or translate to Russian in 1 click.
 
-#### Способ Б: Напрямую в Google AI Studio (Без сторонних сайтов)
-Если вы хотите работать напрямую в официальной консоли Google:
-1. Откройте [https://aistudio.google.com/](https://aistudio.google.com/) и войдите под обычным Gmail-аккаунтом.
-2. Откройте наши публичные эталонные инструкции на Google Диске (ссылки постоянные):
-   * 📄 **[Русская инструкция (Транскрибация + Литературный перевод)](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**
+#### Option B: Directly in Google AI Studio (Zero-Setup Alternative)
+If you prefer running directly in Google's cloud console without third-party web apps:
+1. Open [https://aistudio.google.com/](https://aistudio.google.com/) and log in with any Gmail account.
+2. Open our public master prompt guides on Google Drive (permanent share links):
    * 📄 **[English Guide (Master Transcription Prompt)](https://docs.google.com/document/d/1m5J94BLrehIXnki9rBEUSGut5qZ3BOm5qkveXpd0gac/edit)**
-3. Скопируйте системный промпт в поле **System Instructions**, прикрепите аудиофайл и запустите генерацию.
+   * 📄 **[Russian Guide (Transcription + Literary Translation)](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**
+3. Copy the System Prompt into the **System Instructions** box, upload your audio file, and run.
 
 ---
 
-## 🟡 Уровень 2: Инженерная глубина (Архитектура и физика ИИ)
+## 🟡 Level 2: Engineering Depth & Physics of AI
 
-В этом разделе описаны фундаментальные инженерные открытия и преодоленные проблемы, сформулированные в ходе сотен часов практических тестов на реальных аудиоархивах.
+This section details the critical breakthroughs and neural mechanics formulated across hundreds of hours of empirical stress-testing on archival audio.
 
 ```
-[Пользовательское аудио до 2 ГБ]
-                │
-                ▼  (Прямая загрузка через Google Resumable File API)
+[User Audio up to 2 GB]
+           │
+           ▼  (Direct upload via Google Resumable File API)
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ Google Cloud Gemini File API (Состояние: ACTIVE, Контекст 1M токенов)      │
+│ Google Cloud Gemini File API (State: ACTIVE, 1,000,000 Token Context Window)│
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
-                                       ▼  (Потоковый SSE-стриминг)
+                                       ▼  (SSE Streaming Pipeline)
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ ТРЁХУРОВНЕВЫЙ ЭШЕЛОНИРОВАННЫЙ КАСКАД МОДЕЛЕЙ (Zero-Downtime Fallback)       │
+│ 3-TIERED FAULT-TOLERANT MODEL CASCADE (Zero-Downtime Fallback)              │
 │                                                                             │
-│ 1-й эшелон: gemini-flash-latest / gemini-2.5-flash (Флагманы авто-апдейта)   │
-│       │ Ошибка 429 (исчерпан лимит) / 503 (перегрузка) / 404?               │
+│ Tier 1: gemini-flash-latest / gemini-2.5-flash (Auto-updating flagships)    │
+│       │ Quota 429 / Server Overload 503 / Deprecation 404?                  │
 │       ▼                                                                     │
-│ 2-й эшелон: gemini-3.7-flash / gemini-3.5-flash / gemini-1.5-flash          │
-│       │ Вторичный сбой серверов Google?                                     │
+│ Tier 2: gemini-3.7-flash / gemini-3.5-flash / gemini-1.5-flash              │
+│       │ Secondary infrastructure outage?                                    │
 │       ▼                                                                     │
-│ 3-й эшелон: gemini-pro-latest / gemini-2.5-pro (Тяжелый аварийный резерв)  │
+│ Tier 3: gemini-pro-latest / gemini-2.5-pro (Heavy Emergency Reserve)        │
 └──────────────────────────────────────┬──────────────────────────────────────┘
                                        │
-                                       ▼  (Вшитые хроно-якоря ### [HH:MM:SS])
+                                       ▼  (Mandatory Chrono-Anchors ### [HH:MM:SS])
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ ФРОНТЕНД И ПОСТОБРАБОТКА                                                    │
-│ • Защита от дегенеративных циклов повторов (isDegenerationLoop)            │
-│ • Обход цензурного фильтра RECITATION (threshold: BLOCK_NONE)               │
-│ • Автоматическая очистка таймкодов для режима книги (Clean Reading Mode)    │
-│ • Экспорт в полиграфический Microsoft Word (.docx)                          │
+│ FRONTEND & POST-PROCESSING ENGINE                                           │
+│ • Degenerative loop detection & suppression (isDegenerationLoop)            │
+│ • Bypass copyright safety false alarms (threshold: BLOCK_NONE)              │
+│ • Clean Book Mode client-side timestamp stripping                           │
+│ • Academic Microsoft Word (.docx) generator with styled typography          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 1. Почему нарезка на чанки — это фатальная ошибка (100% Монолитный стандарт)
-В ранних системах аудио нарезали через `ffmpeg` на куски по 10–15 минут.  
-**Для серьезных философских лекций нарезка на чанки неприемлема по двум причинам:**
-1. **Разрыв шлок и понятийных связей:** Разрез обязательно приходится на середину цитируемого стиха или на середину аргумента.
-2. **Эмпирический коллапс внимания (Изоляция контекста):** В ходе тестов чанк с 01:15:00 по 01:30:00 без контекста предшествующих 75 минут речи сжимался моделью всего до 4 пустых строк (50 слов), так как нейросеть посчитала фрагмент несвязным шумом.
+### 1. Why Chunk Slicing Fails (The 100% Monolithic Standard)
+Early audio transcription pipelines sliced files via `ffmpeg` into 10–15 minute segments.  
+**For rigorous philosophical discourse, chunking is fatal for two reasons:**
+1. **Splitting Verses & Syntax:** Cuts inevitably slice through the middle of recited Sanskrit poetry or complex philosophical syllogisms.
+2. **Context Collapse:** In empirical tests, an isolated chunk from `01:15:00` to `01:30:00` without the preceding 75 minutes of contextual grounding was treated by the AI as disconnected babble, collapsing 15 minutes of speech into just 4 empty bullet points (50 words).
 
-**Стандарт VaniVoice AI:** Аудио подается **исключительно монолитно в 1 проход (1-Pass Unified)** через Google Gemini File API. Модель держит в оперативной памяти всю лекцию целиком, понимая терминологию, введенную спикером в самом начале.
-
----
-
-### 2. Анатомия «обрыва на середине»: 3 скрытые ловушки
-
-Многие пользователи сталкиваются с тем, что ИИ расшифровывает первые 10 минут двухчасовой лекции, а затем неожиданно останавливается, пишет «Спасибо за внимание!» и отдает статус успешного завершения.  
-Мы детально вскрыли механику этой проблемы:
-
-#### Ловушка А: Табу на модели семейства «Lite» (Early Completion Bias)
-* **Проблема:** Модели с приставкой `Lite` (`gemini-2.5-flash-lite`, `8b`, `gemini-3.5-flash-lite`) имеют урезанный механизм внимания. При подаче непрерывного аудио длиннее 15 минут модель «устает», слышит любую паузу или промежуточный итог и галлюцинирует окончание лекции, возвращая `finishReason: STOP`.
-* **Решение:** В коде сервиса зашит строгий фильтр: `!name.includes('lite') && !name.includes('8b')`. Допускаются **только полновесные Flash-модели**.
-
-#### Ловушка Б: Хронологические якоря (Chrono-Anchors)
-* **Проблема:** Авторегрессионный декодер аудио при длинных паузах лектора теряет ориентацию во времени.
-* **Решение:** В системный промпт жестко встроен императив: **ставить заголовок `### [HH:MM:SS]` каждые 3–5 минут**. Эти временные вехи служат жесткими рельсами для внимания ИИ.  
-* *А если нужна чистая книга без таймкодов?* Таймкоды всегда запрашиваются у нейросети под капотом, а фронтенд сервиса при включении «Режима книги» бесшовно вырезает их перед выводом на экран и формированием Word-файла!
-
-#### Ловушка В: Лимит токенов вывода (Output Token Limit)
-* **Проблема:** Дефолтный лимит ответа во многих интерфейсах равен 8 192 токенам. Для 2-часовой лекции требуется 20 000–35 000 токенов вывода. При достижении 8 192 токенов генерация просто прерывалась на полуслове.
-* **Решение:** В кодовой базе лимит жестко зафиксирован на максимуме: `maxOutputTokens: 65536`.
+**The VaniVoice Standard:** Audio is fed **strictly as a 100% unified monolith in 1 single pass (1-Pass Unified)** through the Google Gemini File API. The neural net holds the entire multi-hour discourse in its active 1M-token attention window, retaining full awareness of terminology introduced at minute one.
 
 ---
 
-### 3. Трёхуровневый каскад моделей (Tiered Cascade Fallback)
-Для гарантии 99.9% аптайма сервис использует эшелонированный пул:
-1. **Tier 1 (Флагманы):** `gemini-flash-latest`, `gemini-2.5-flash`, `gemini-3.6-flash`, `gemini-3.8-flash`.
-2. **Tier 2 (Резерв высокой стабильности):** `gemini-3.7-flash`, `gemini-3.5-flash`, `gemini-1.5-flash-latest`, `gemini-1.5-flash`.
-3. **Tier 3 (Аварийный резерв Pro):** `gemini-pro-latest`, `gemini-2.5-pro` (включается, если все кластеры Flash временно перегружены).
+### 2. Anatomy of the "Premature Cutoff": 3 Hidden Traps
 
-**Динамический авто-опрос (`discoverAvailableModels`):**  
-При инициализации сервис отправляет запрос к каталогу `GET /v1beta/models`, сверяет список моделей, доступных для текущего API-ключа, автоматически исключает выключенные Google версии и упорядочивает их по приоритету.
+Many users find that an AI transcribes the first 10 minutes of a 2-hour recording, then abruptly outputs "Thank you for listening!" and terminates with an HTTP 200 OK.  
+Here is the exact neural mechanics behind this bug:
 
-**Обработка ошибок:**
-* **Ошибка 404:** Модель переименована или депрецирована Google ➔ мгновенный переход к следующей модели каскада.
-* **Ошибка 429 / 503:** Лимит исчерпан или сервер Google занят ➔ автоматическая смена API-ключа из пула окружения и плавный переход на резервную модель. Пользователь в статусе видит: `gemini-2.5-flash (fallback) active`.
+#### Trap A: The "Lite" Model Taboo (Early Completion Bias)
+* **Root Cause:** Models branded `Lite` (`gemini-2.5-flash-lite`, `8b`, `gemini-3.5-flash-lite`) have stripped attention heads. On continuous audio exceeding 15 minutes, the attention mechanism suffers cognitive drift. Upon encountering any pause or interim summary, it hallucinates an artificial conclusion and returns `finishReason: STOP`.
+* **Fix:** The codebase enforces a strict runtime barrier: `!name.includes('lite') && !name.includes('8b')`. **Only full-weight Flash models are permitted.**
+
+#### Trap B: Chronological Anchors (Chrono-Anchors)
+* **Root Cause:** Autoregressive audio decoders lose temporal synchronization during prolonged speech pauses.
+* **Fix:** The system prompt mandates injecting Markdown headers **every 3 to 5 minutes: `### [HH:MM:SS]`**. These serve as temporal guardrails locking attention across the timeline.  
+* *What if the user wants clean book prose without timestamps?* Timestamps are **always requested from the model under the hood**, and the frontend's Clean Book Mode seamlessly strips them before rendering or exporting to Word!
+
+#### Trap C: Default Output Token Limits
+* **Root Cause:** Default output budgets in many developer consoles default to 8,192 tokens. A 2-hour verbatim lecture produces 20,000–35,000 tokens. Once 8,192 is reached, generation abruptly cuts off mid-sentence.
+* **Fix:** All API payloads enforce `maxOutputTokens: 65536`.
 
 ---
 
-### 4. Преодоление цензурного фильтра `RECITATION`
-При цитировании древних санскритских мантр, бхаджанов или шлок из «Бхагавад-гиты» системы безопасности Google могут ошибочно решить, что модель воспроизводит защищенный копирайтом текст, вызывая аварийную остановку `finishReason: RECITATION`.  
-* **Решение:** Во все вызовы API внедрен массив `SACRED_TEXT_SAFETY_SETTINGS`, устанавливающий `threshold: BLOCK_NONE` для всех категорий безопасности.
+### 3. 3-Tiered Fault-Tolerant Model Cascade
+To guarantee 99.9% availability, VaniVoice AI employs an intelligent tiered pool:
+1. **Tier 1 (Flagships & Auto-Update):** `gemini-flash-latest`, `gemini-2.5-flash`, `gemini-3.6-flash`, `gemini-3.8-flash`.
+2. **Tier 2 (High-Stability Backups):** `gemini-3.7-flash`, `gemini-3.5-flash`, `gemini-1.5-flash-latest`, `gemini-1.5-flash`.
+3. **Tier 3 (Emergency Pro Reserve):** `gemini-pro-latest`, `gemini-2.5-pro` (activated if all Flash clusters experience regional overload).
+
+**Dynamic Model Discovery (`discoverAvailableModels`):**  
+On startup, the system queries `GET /v1beta/models`, verifies which models are operational for the current API key, purges deprecated revisions, and sorts by resilience tiers.
+
+**Zero-Downtime Error Handling:**
+* **HTTP 404 (Model Renamed/Deprecated by Google):** Bypasses immediately to the next tier without stalling.
+* **HTTP 429 / 503 (Quota Limit or Server Busy):** Automatically rotates to the next API key from the environment pool and smoothly transitions to the backup model. Users see real-time UI feedback: `gemini-2.5-flash (fallback) active`.
 
 ---
 
-### 5. Золотой редакторский стандарт (Golden Standard v1.2.1)
-* **1:1 Verbatim Fidelity:** Полная фиксация речи, юмора, риторических вопросов и реакций зала (`[смех в зале]`).
-* **Разворот сокращений:** Разговорные формы разворачиваются в академический книжный стиль (`I'm` ➔ `I am`, `didn't` ➔ `did not`, `won't` ➔ `will not`).
-* **Матрица фонетических исправлений (Top-40):**
+### 4. Bypassing False Copyright Halts (`RECITATION`)
+When a speaker chants ancient Sanskrit prayers, bhajans, or stanzas from the *Bhagavad-gītā*, Google's default safety filter may trigger a false positive copyright alert, resulting in `finishReason: RECITATION`.  
+* **Fix:** All streaming calls pass `SACRED_TEXT_SAFETY_SETTINGS` setting `threshold: BLOCK_NONE` across all 5 safety categories.
+
+---
+
+### 5. Golden Editorial Standard v1.2.1
+* **1:1 Verbatim Fidelity:** Captures every sentence, humorous anecdote, rhetorical beat, and audience reaction (`[laughter]`).
+* **Contraction Expansion:** Formal written English (`I'm` ➔ `I am`, `didn't` ➔ `did not`, `won't` ➔ `will not`).
+* **Sanskrit IAST Phonetic Correction Map (Top-40):**
   * `smart / smarter` ➔ *smārta*
   * `back the / bucket` ➔ *bhakti*
   * `propad / pro pad` ➔ *Prabhupāda*
   * `kartritva / kartrtva` ➔ *kartṛtva*
   * `purusha / prakriti` ➔ *puruṣa / prakṛti*
   * `shastra / darshan` ➔ *śāstra / darśana*
-* **Оформление стихов:** Шлоки выносятся в аккуратные цитатные блоки прямым шрифтом с полужирным указанием источника:
+* **Verse Formatting:** Canonical stanzas formatted as clean blockquotes with bold citations:
   > sarva-dharmān parityajya mām ekaṁ śaraṇaṁ vraja  
   > — **Bhagavad-gītā 18.66**
 
 ---
 
-## 🔴 Уровень 3: Технический паспорт, развертывание и AI-инструкции
+## 🔴 Level 3: Technical Passport, Deployment & AI Agent Guide
 
-### 1. Стек технологий
+### 1. Technology Stack
 * **Frontend:** React 19, TypeScript 5.7, Vite 6
-* **Стилизация:** Tailwind CSS 4, Lucide Icons
-* **ИИ-ядро:** Google Gemini Flash API (`streamGenerateContent` via SSE)
-* **Аудио-пайплайн:** Google Resumable File API (напрямую из браузера пользователя в Google Cloud без нагрузки на сервер хостинга)
-* **Документы:** Библиотека `docx` для генерации файлов Word со встроенными стилями
-* **Хостинг:** Vercel Edge Network
+* **Styling:** Tailwind CSS 4, Lucide Icons
+* **AI Engine:** Google Gemini Flash API (`streamGenerateContent` via SSE)
+* **Audio Pipeline:** Google Resumable File API (direct client-to-Google Cloud streaming with zero hosting payload overhead)
+* **Export:** `docx` library generating styled Microsoft Word documents with headers, footers, and page numbers
+* **Hosting:** Vercel Edge Network
 
 ---
 
-### 2. Быстрый локальный запуск (За 3 минуты)
+### 2. 3-Minute Local Setup
 
 ```bash
-# 1. Клонируйте репозиторий
+# 1. Clone repository
 git clone https://github.com/dumatel42/lecture-transcriber.git
 cd lecture-transcriber
 
-# 2. Установите зависимости
+# 2. Install dependencies
 npm install
 
-# 3. Запустите локальный сервер разработки
+# 3. Start local development server
 npm run dev
 ```
-Откройте браузер по адресу: `http://localhost:5173`.  
-API-ключ можно ввести прямо в интерфейсе через модальное окно **«API ключ»** (он сохранится в вашем локальном `localStorage`).
+Open `http://localhost:5173` in your browser.  
+Enter your API key via the **"API Key"** modal (persisted securely in local `localStorage`).
 
 ---
 
-### 3. Конфигурация переменных окружения (`.env`)
+### 3. Environment Variables (`.env`)
 
-Для развертывания общедоступной версии скопируйте `.env.example` в `.env`:
+For production self-hosting, create `.env` from `.env.example`:
 
 ```env
-# Основной ключ Google Gemini
+# Primary Google Gemini API Key
 VITE_GEMINI_API_KEY="AIzaSy..."
 
-# Пул ключей для автоматической ротации при исчерпании квот (через запятую)
-# 3 ключа обеспечивают 4 500 бесплатных запросов в сутки
+# Multi-Key Pool for automatic quota failover (comma-separated)
+# 3 keys yield 4,500 free requests per day
 VITE_GEMINI_KEY_POOL="AIzaSyKey1...,AIzaSyKey2...,AIzaSyKey3..."
 ```
 
 ---
 
-### 4. Деплой на Vercel (В 1 клик)
+### 4. 1-Click Vercel Deployment
 
 ```bash
 npm install -g vercel
 vercel --prod
 ```
-В панели управления Vercel добавьте `VITE_GEMINI_API_KEY` и `VITE_GEMINI_KEY_POOL` в разделе **Settings ➔ Environment Variables**.
+Add `VITE_GEMINI_API_KEY` and `VITE_GEMINI_KEY_POOL` under **Settings ➔ Environment Variables** in your Vercel project dashboard.
 
 ---
 
-### 5. Памятка для AI-ассистентов (Cursor, Antigravity, Claude Code, Cline)
+### 5. Architectural Guide for AI Agents (Cursor, Antigravity, Claude Code, Cline)
 
-Если вы — автономный AI-агент, развивающий данный репозиторий, строго соблюдайте следующие правила архитектуры:
+If you are an autonomous AI agent maintaining this codebase, you MUST adhere to the following architectural laws:
 
-#### 🗺️ Карта ключевых файлов:
-* [`src/services/gemini.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/services/gemini.ts) — Сердце платформы. Содержит логику загрузки в Google File API, SSE-стриминг, эшелонированный каскад `PRODUCTION_MODELS`, динамическое авто-обнаружение `discoverAvailableModels`, фильтрацию дегенеративных циклов `isDegenerationLoop` и глобальные настройки `SACRED_TEXT_SAFETY_SETTINGS`.
-* [`src/constants/presets.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/constants/presets.ts) — Эталонные системные промпты (Golden Standard v1.2.1), правила IAST, канон перевода Vedabase.io и обязательные хроно-якоря.
-* [`src/App.tsx`](file:///Users/alex/my_projects/lecture-transcriber/src/App.tsx) — Главный компонент интерфейса: drag-and-drop загрузка, индикация модели (`onModelSelected`), переключение режимов книги и запуск транскрибации/перевода.
-* [`src/utils/docxExport.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/utils/docxExport.ts) — Генератор Microsoft Word файлов: титульная страница, стили заголовков, колонтитулы и очистка артефактов.
+#### 🗺️ Key Files Map:
+* [`src/services/gemini.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/services/gemini.ts) — Core engine. Houses File API upload, SSE streaming, tiered cascade `PRODUCTION_MODELS`, dynamic discovery `discoverAvailableModels`, repetition loop suppression `isDegenerationLoop`, and `SACRED_TEXT_SAFETY_SETTINGS`.
+* [`src/constants/presets.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/constants/presets.ts) — Master prompt engineering (Golden Standard v1.2.1), IAST rules, Vedabase.io translation canons, and mandatory chrono-anchors.
+* [`src/App.tsx`](file:///Users/alex/my_projects/lecture-transcriber/src/App.tsx) — Main UI component: drag-and-drop, model badge updates (`onModelSelected`), Clean Book mode toggle, and transcription/translation triggers.
+* [`src/utils/docxExport.ts`](file:///Users/alex/my_projects/lecture-transcriber/src/utils/docxExport.ts) — Word document generator: typography, cover page, running headers, and clean formatting.
 
-#### ⛔ Категорические табу для ИИ-агентов:
-1. **ТАБУ НА НАРЕЗКУ НА ЧАНКИ:** Никогда не добавляйте нарезку аудио через ffmpeg на куски для философских лекций. Аудио всегда подается монолитно целиком через File API.
-2. **ТАБУ НА LITE-МОДЕЛИ:** Категорически запрещено возвращать в пул `PRODUCTION_MODELS` модели с приставкой `lite` или `8b`. Они вызывают преждевременный срыв внимания на 6–15 минутах.
-3. **ТАБУ НА УДАЛЕНИЕ ТАЙМКОДОВ ИЗ ПРОМПТА:** В системных промптах `presets.ts` требование хроно-якорей `### [HH:MM:SS]` обязательно должно присутствовать всегда. Для чистого книжного режима таймкоды срезаются функцией `cleanTimestamps()` на клиенте, но модель **всегда должна их генерировать** для удержания внимания.
-4. **ТАБУ НА БЕЗУСЛОВНЫЙ `throw err` В КАСКАДЕ:** При перехвате ошибок в цикле моделей никогда не прерывайте цикл, если остались запасные модели в пуле. Ошибки 404, 429, 503 должны приводить к мягкому переходу на следующий эшелон.
+#### ⛔ Strict Taboos for AI Agents:
+1. **TABOO ON CHUNKING:** Never implement ffmpeg chunk slicing for philosophical lectures. Audio must remain 100% monolithic through the File API.
+2. **TABOO ON LITE MODELS:** Never reintroduce `lite` or `8b` models into `PRODUCTION_MODELS`. They induce early completion bias.
+3. **TABOO ON REMOVING TIMESTAMPS FROM PROMPTS:** In `presets.ts`, the mandate for `### [HH:MM:SS]` must always remain in the AI prompt. For Clean Book mode, timestamps are stripped client-side via `cleanTimestamps()`.
+4. **TABOO ON UNCONDITIONAL `throw err`:** Never break out of the model cascade loop upon non-429 errors. Errors 404, 429, 503 must cascade gracefully to the next model tier.
 
 ---
 
-## 📄 Лицензия и контакты
+## 📄 License & Community
 
-Проект распространяется под открытой лицензией **MIT License**.  
-Свободно для использования, модификации и распространения исследователями, переводчиками и вайшнавскими общинами по всему миру.
+Released under the permissive **MIT License**.  
+Free for use, modification, and distribution by researchers, translators, scholars, and spiritual communities worldwide.
 
 * **GitHub:** [https://github.com/dumatel42/lecture-transcriber](https://github.com/dumatel42/lecture-transcriber)
-* **Рабочий онлайн-сервис:** [https://lecture-transcriber-eta.vercel.app](https://lecture-transcriber-eta.vercel.app)
+* **Live Service:** [https://lecture-transcriber-eta.vercel.app](https://lecture-transcriber-eta.vercel.app)
