@@ -282,6 +282,25 @@ If you are an autonomous AI agent maintaining this codebase, you MUST adhere to 
 
 ---
 
+### 6. System Evolution Chronicle & Strategic Knowledge Moats
+
+This section serves as a direct architectural brief for software engineers and autonomous AI agents (Cursor, Antigravity, Claude Code, Cline) analyzing this codebase to design next-generation speech and NLP systems.  
+Below is the definitive catalog of the 9 foundational evolutions, breakthroughs, and knowledge moats developed across hundreds of hours of empirical stress-testing:
+
+| # | Engineering Domain | Naive Industry Pattern (Common Pitfalls) | VaniVoice AI Strategic Moat (Our Breakthrough) |
+|---|---|---|---|
+| **1** | **Long-Form Audio Ingestion** | Slicing audio via `ffmpeg` into 10–15 min chunks (Whisper-style) ➔ splits verses in half, isolates context, and collapses middle segments into empty summaries. | **100% Monolithic 1-Pass Standard:** Ingesting up to 2 GB / 9.5 hrs of continuous audio in a single call via Google Resumable File API into Gemini's 1M-token context window. |
+| **2** | **Mid-Stream Truncation Prevention** | Deploying "fast and cheap" lightweight models (`flash-lite`, `8b`) ➔ premature stoppage at 12–15 min with false-positive `finishReason: STOP`. | **Lite-Model Prohibition + Max Output Tokens:** Strict programmatic exclusion `!name.includes('lite')` combined with hardcoded `maxOutputTokens: 65536`. |
+| **3** | **Attention Railing** | Unanchored prompt directives ("transcribe all speech") ➔ autoregressive decoder loses temporal continuity across long pauses, skipping entire sections. | **Chrono-Anchors (`### [HH:MM:SS]`):** Mandatory 2–3 minute temporal headers in system prompts act as guide rails for model attention (stripped client-side for book mode). |
+| **4** | **API Fault Tolerance & High Availability** | Hardcoding a single static model identifier (`gemini-1.5-flash`) ➔ catastrophic outage on deprecation (404) or rate-limit exhaustion (429). | **3-Tier Cascade + Key Pool Rotation:** Dynamic model probing via `GET /v1beta/models`, fallback across Tier 1–3, and seamless client-side rotation across `VITE_GEMINI_KEY_POOL`. |
+| **5** | **Safety & Recitation Bypass** | Default cloud safety thresholds ➔ generation aborted with `finishReason: RECITATION` when reciting canonical verses (*Bhagavad-gītā*). | **`SACRED_TEXT_SAFETY_SETTINGS` Array:** Explicit enforcement of `threshold: BLOCK_NONE` for classical philosophical and theological recitations. |
+| **6** | **Scriptural Verbatim Canon** | Autoregressive Completion Bias: hearing a 3-word scriptural hook, the LLM hallucinates unrecited lines from its training corpus. | **1:1 Scriptural Verbatim:** Transcribing only spoken words, validating canonical IAST diacritics against Vedabase.io, and suppressing repeated bibliographic citations during word breakdowns. |
+| **7** | **Bilingual Lecture Processing** | Ingesting lecturer and live interpreter into a single unstructured stream ➔ linguistic contamination and garbled syntax. | **Dual Pipeline Architecture:** 1) Interpreter Filtering (seamlessly fusing fragmented English speech); 2) `bilingual_split` with dynamic language auto-tagging (`[Lecturer (EN)]` / `[Interpreter (IT)]`). |
+| **8** | **Zero-Cost Edge Infrastructure ($0/mo)** | Uploading gigabyte files through an intermediate proxy backend (Node/Python) ➔ Out-Of-Memory crashes and heavy hosting bills. | **Direct Client-to-Cloud Resumable Streaming:** The browser streams chunks straight to Google Cloud Storage (`X-Goog-Upload-*`), allowing $0 server overhead and unlimited scalability. |
+| **9** | **Publication-Grade Word Processing** | Raw Markdown dumps requiring hours of manual layout adjustment, font formatting, and table alignment. | **Dual Side Vision DOCX:** Programmatic generation of book-ready Microsoft Word documents featuring Georgia typography and synchronized 50/50 landscape tables (original alongside canonical translation). |
+
+---
+
 ## 📄 License & Community
 
 Released under the permissive **MIT License**.  
