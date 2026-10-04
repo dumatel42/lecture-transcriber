@@ -181,6 +181,34 @@ When a speaker chants ancient Sanskrit prayers, bhajans, or stanzas from the *Bh
 
 ---
 
+### 6. Bilingual Discourse Architecture (English + Italian / Spanish / Russian)
+
+During international lecture tours, discourses are frequently delivered with live consecutive or simultaneous interpretation into the host language (Italian, Spanish, Russian, French, German, etc.).  
+The VaniVoice AI architecture provides two specialized operational pipelines:
+
+#### Option 1 (Default): "Interpreter Filtering" (Monolithic Original Speech)
+* **Goal:** Extract 100% clean, continuous, publication-ready English discourse as if the interpreter were never on stage.
+* **Under the Hood:** Powered by the 1,000,000-token context window and 1-Pass monolithic processing, Gemini Flash maintains complete thematic coherence across hours. The master system prompt enforces strict interpreter exclusion:
+  ```
+  7. INTERPRETER FILTERING:
+  - Transcribe ONLY the primary English lecturer verbatim.
+  - If an interpreter is translating into another language (Italian, Spanish, Russian, etc.), completely OMIT their segments.
+  - Never enter a repetition loop. Advance steadily forward chronologically to the end.
+  ```
+* **Result:** The model immediately isolates the interpreter's voice as a translation duplicate, discards non-English utterances, and **seamlessly fuses the lecturer's segmented sentences into one uninterrupted, elegant academic flow** (the exact technique used to produce the acclaimed London/Italy discourse transcripts).
+
+#### Option 2: "Both Speakers" Dialogue Mode (Bilingual Split)
+* **Goal:** Capture both the English lecturer and the live interpreter's translations chronologically for comparative study or dual-language archiving.
+* **Under the Hood:** Select the `Both Speakers (Lecturer + Interpreter)` preset. The model automatically detects the interpreter's spoken language code and tags every substantial turn:
+  ```markdown
+  ### [00:04:15]
+  [Lecturer (EN)]: The true nature of the soul is eternal service to the Supreme.
+  [Interpreter (IT)]: La vera natura dell'anima è il servizio eterno al Supremo.
+  ```
+* **Result:** Full transcript of both voices, retaining Sanskrit terms in *italics* with IAST diacritics across both linguistic streams.
+
+---
+
 ## 🔴 Level 3: Technical Passport, Deployment & AI Agent Guide
 
 ### 1. Technology Stack
