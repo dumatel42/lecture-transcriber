@@ -17,3 +17,4 @@ dist-ssr
 *.m4a
 *.wav
 *.cjs
+cache/
