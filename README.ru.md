@@ -68,10 +68,12 @@
 #### Способ Б: Напрямую в Google AI Studio (Без сторонних сайтов)
 Если вы хотите работать напрямую в официальной консоли Google:
 1. Откройте [https://aistudio.google.com/](https://aistudio.google.com/) и войдите под обычным Gmail-аккаунтом.
-2. Откройте наши публичные эталонные инструкции на Google Диске (ссылки постоянные):
-   * 📄 **[Русская инструкция (Транскрибация + Литературный перевод)](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**
-   * 📄 **[English Guide (Master Transcription Prompt)](https://docs.google.com/document/d/1m5J94BLrehIXnki9rBEUSGut5qZ3BOm5qkveXpd0gac/edit)**
-3. Скопируйте системный промпт в поле **System Instructions**, прикрепите аудиофайл и запустите генерацию.
+2. Откройте наше **Русскоязычное эталонное руководство** на Google Диске (постоянная ссылка):  
+   👉 📄 **[ИНСТРУКЦИЯ: Бесплатная транскрибация лекций в Google AI Studio](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**  
+   *Включает подробные пошаговые инструкции на русском языке и оба боевых промпта: Промпт №1 (Транскрибация английской речи) и Промпт №2 (Литературный перевод на русский с каноном Vedabase.io).*
+3. Скопируйте нужный промпт в поле **System Instructions**, прикрепите аудиофайл и запустите генерацию.
+
+> **Для англоязычных коллег:** Для англоязычных редакторов и слушателей доступно отдельное англоязычное руководство: **[GUIDE: Free Vaishnava Lecture Transcription in Google AI Studio](https://docs.google.com/document/d/1m5J94BLrehIXnki9rBEUSGut5qZ3BOm5qkveXpd0gac/edit)**.
 
 ---
 

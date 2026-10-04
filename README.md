@@ -68,10 +68,12 @@ The system operates entirely on **Google AI Studio's Free Tier**:
 #### Option B: Directly in Google AI Studio (Zero-Setup Alternative)
 If you prefer running directly in Google's cloud console without third-party web apps:
 1. Open [https://aistudio.google.com/](https://aistudio.google.com/) and log in with any Gmail account.
-2. Open our public master prompt guides on Google Drive (permanent share links):
-   * 📄 **[English Guide (Master Transcription Prompt)](https://docs.google.com/document/d/1m5J94BLrehIXnki9rBEUSGut5qZ3BOm5qkveXpd0gac/edit)**
-   * 📄 **[Russian Guide (Transcription + Literary Translation)](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**
+2. Open our **English Master Prompt Guide** on Google Drive (permanent share link):  
+   👉 📄 **[GUIDE: Free Vaishnava Lecture Transcription in Google AI Studio](https://docs.google.com/document/d/1m5J94BLrehIXnki9rBEUSGut5qZ3BOm5qkveXpd0gac/edit)**  
+   *Includes full English step-by-step workflow, model configuration parameters (Gemini 2.5 Flash, 65,536 output tokens), and the English Vaishnava Golden Standard v1.2.1 Master System Prompt.*
 3. Copy the System Prompt into the **System Instructions** box, upload your audio file, and run.
+
+> **Note for Bilingual Editors:** If you also require the companion Russian literary translation prompt (Vedabase.io canon & Russian morphology standard), refer to our companion **[Russian Guide (Transcription + Translation)](https://docs.google.com/document/d/1Xh2MpfwDCqePLlpF6t0suv941MWh75OABBocoDJ9M9Q/edit)**.
 
 ---
 
